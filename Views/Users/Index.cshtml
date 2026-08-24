@@ -1,7 +1,7 @@
-@model List<ApplicationUser>
+@using POS.Web.ViewModels
+@model List<UserListItemDto>
 @{
     ViewData["Title"] = "المستخدمون";
-    var rolesByUser = (Dictionary<string, IList<string>>)ViewData["RolesByUser"]!;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -26,7 +26,7 @@
             <tr>
                 <td>@user.FullName</td>
                 <td>@user.Email</td>
-                <td>@string.Join(", ", rolesByUser[user.Id])</td>
+                <td>@user.Roles</td>
                 <td>
                     @if (user.IsSuspended)
                     {

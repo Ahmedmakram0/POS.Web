@@ -19,9 +19,9 @@ public class FinancialAccountService(ApplicationDbContext db) : IFinancialAccoun
     public Task<List<FinancialAccount>> GetAllAccountsAsync() =>
         db.FinancialAccounts.OrderBy(a => a.Type).ToListAsync();
 
-    public async Task<List<FinancialTransaction>> GetTransactionsAsync(FinancialAccountType? type = null, DateTime? fromUtc = null, DateTime? toUtc = null)
+    public async Task<List<FinancialTransactionListItemDto>> GetTransactionsAsync(FinancialAccountType? type = null, DateTime? fromUtc = null, DateTime? toUtc = null)
     {
-        var query = db.FinancialTransactions.Include(t => t.FinancialAccount).AsQueryable();
+        var query = db.FinancialTransactions.AsQueryable();
 
         if (type is FinancialAccountType accountType)
         {
@@ -36,7 +36,12 @@ public class FinancialAccountService(ApplicationDbContext db) : IFinancialAccoun
             query = query.Where(t => t.CreatedAt <= to);
         }
 
-        return await query.OrderByDescending(t => t.CreatedAt).Take(200).ToListAsync();
+        return await query
+            .OrderByDescending(t => t.CreatedAt)
+            .Take(200)
+            .Select(t => new FinancialTransactionListItemDto(
+                t.CreatedAt, t.FinancialAccount!.Name, t.Type, t.Direction, t.Amount, t.Reference, t.Description))
+            .ToListAsync();
     }
 
     public async Task<FinancialAccount> GetOrCreateAccountAsync(FinancialAccountType type)

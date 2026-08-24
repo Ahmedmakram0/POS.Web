@@ -1,4 +1,5 @@
-@model List<FinancialTransaction>
+@using POS.Web.Services.Financial
+@model List<FinancialTransactionListItemDto>
 @{
     ViewData["Title"] = "الخزينة";
     var accounts = (List<FinancialAccount>)ViewData["Accounts"]!;
@@ -65,7 +66,7 @@
         {
             <tr>
                 <td>@t.CreatedAt.ToLocalTime().ToString("g")</td>
-                <td>@t.FinancialAccount?.Name</td>
+                <td>@t.AccountName</td>
                 <td>@t.Type</td>
                 <td class="@(t.Direction == TransactionDirection.In ? "text-success" : "text-danger")">
                     @(t.Direction == TransactionDirection.In ? "وارد" : "صادر")

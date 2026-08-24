@@ -3,13 +3,17 @@ using POS.Web.Models.Enums;
 
 namespace POS.Web.Services.Financial;
 
+public record FinancialTransactionListItemDto(
+    DateTime CreatedAt, string? AccountName, FinancialTransactionType Type,
+    TransactionDirection Direction, decimal Amount, string? Reference, string? Description);
+
 public interface IFinancialAccountService
 {
     Task<List<FinancialAccount>> GetAllAccountsAsync();
     Task<FinancialAccount> GetOrCreateAccountAsync(FinancialAccountType type);
     Task<decimal> GetBalanceAsync(FinancialAccountType type);
 
-    Task<List<FinancialTransaction>> GetTransactionsAsync(FinancialAccountType? type = null, DateTime? fromUtc = null, DateTime? toUtc = null);
+    Task<List<FinancialTransactionListItemDto>> GetTransactionsAsync(FinancialAccountType? type = null, DateTime? fromUtc = null, DateTime? toUtc = null);
 
     Task<FinancialTransaction> PostAsync(
         FinancialAccountType accountType,

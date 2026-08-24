@@ -14,13 +14,13 @@ public class UsersController(UserManager<ApplicationUser> userManager, RoleManag
     public async Task<IActionResult> Index()
     {
         var users = userManager.Users.OrderBy(u => u.FullName).ToList();
-        var rolesByUser = new Dictionary<string, IList<string>>();
+        var items = new List<UserListItemDto>();
         foreach (var user in users)
         {
-            rolesByUser[user.Id] = await userManager.GetRolesAsync(user);
+            var roles = await userManager.GetRolesAsync(user);
+            items.Add(new UserListItemDto(user.Id, user.FullName, user.Email, string.Join(", ", roles), user.IsSuspended));
         }
-        ViewData["RolesByUser"] = rolesByUser;
-        return View(users);
+        return View(items);
     }
 
     [HttpGet]
