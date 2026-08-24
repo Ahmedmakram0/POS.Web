@@ -9,8 +9,25 @@ public class StoreService(ApplicationDbContext db) : NamedEntityServiceBase<Stor
 {
     protected override DbSet<Store> Set => Db.Stores;
 
-    // Views/Stores/Index.cshtml shows a per-store product count.
-    protected override IQueryable<Store> ListQuery => Db.Stores.Include(s => s.Products);
+    public async Task<List<StoreListItemDto>> GetAllForListAsync(bool includeInactive = false, string? search = null)
+    {
+        var query = Db.Stores.AsQueryable();
+
+        if (!includeInactive)
+        {
+            query = query.Where(s => s.Status == Models.Enums.EntityStatus.Active);
+        }
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(s => s.Name.Contains(term));
+        }
+
+        return await query
+            .OrderBy(s => s.Name)
+            .Select(s => new StoreListItemDto(s.Id, s.Name, s.Address, s.Phone, s.Status, s.Products.Count))
+            .ToListAsync();
+    }
 
     public async Task<Store> CreateAsync(CreateStoreRequest request)
     {

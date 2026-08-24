@@ -9,6 +9,26 @@ public class CategoryService(ApplicationDbContext db) : NamedEntityServiceBase<C
 {
     protected override DbSet<Category> Set => Db.Categories;
 
+    public async Task<List<CategoryListItemDto>> GetAllForListAsync(bool includeInactive = false, string? search = null)
+    {
+        var query = Db.Categories.AsQueryable();
+
+        if (!includeInactive)
+        {
+            query = query.Where(c => c.Status == Models.Enums.EntityStatus.Active);
+        }
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(c => c.Name.Contains(term));
+        }
+
+        return await query
+            .OrderBy(c => c.Name)
+            .Select(c => new CategoryListItemDto(c.Id, c.Name, c.Status, c.Products.Count))
+            .ToListAsync();
+    }
+
     public async Task<Category> CreateAsync(CreateCategoryRequest request)
     {
         var category = new Category { Name = request.Name };

@@ -12,7 +12,7 @@ public class StoresController(IStoreService storeService) : Controller
     public async Task<IActionResult> Index(bool includeInactive = false)
     {
         ViewData["IncludeInactive"] = includeInactive;
-        return View(await storeService.GetAllAsync(includeInactive));
+        return View(await storeService.GetAllForListAsync(includeInactive));
     }
 
     [HttpGet]

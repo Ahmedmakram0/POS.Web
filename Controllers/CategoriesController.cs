@@ -12,7 +12,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     public async Task<IActionResult> Index(bool includeInactive = false)
     {
         ViewData["IncludeInactive"] = includeInactive;
-        return View(await categoryService.GetAllAsync(includeInactive));
+        return View(await categoryService.GetAllForListAsync(includeInactive));
     }
 
     [HttpGet]
