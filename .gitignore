@@ -1,8 +1,10 @@
 bin/
 obj/
+publish/
 *.db
 *.db-shm
 *.db-wal
 .vs/
 .vscode/*.log
 appsettings.*.local.json
+Properties/PublishProfiles/
