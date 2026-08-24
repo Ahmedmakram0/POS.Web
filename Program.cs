@@ -23,8 +23,8 @@ builder.Services.AddControllersWithViews(options => options.Filters.Add<PageAcce
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? "Host=localhost;Database=POSWebDb;Username=posweb;Password=posweb"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? "Server=localhost;Database=POSWebDb;User Id=posweb;Password=posweb;TrustServerCertificate=True"));
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
