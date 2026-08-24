@@ -1,0 +1,8 @@
+@model POS.Web.ViewModels.ToggleStatusButtonModel
+
+<form asp-action="ToggleStatus" asp-route-id="@Model.Id" method="post" class="d-inline">
+    <input type="hidden" name="currentStatus" value="@Model.Status" />
+    <button type="submit" class="@Model.ButtonClass">
+        @(Model.Status == EntityStatus.Active ? "تعطيل" : "تفعيل")
+    </button>
+</form>

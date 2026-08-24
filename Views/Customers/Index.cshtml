@@ -9,18 +9,7 @@
     <a class="btn btn-primary" asp-action="Create">إضافة عميل</a>
 </div>
 
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-4">
-        <input type="text" name="search" value="@ViewData["Search"]" class="form-control" placeholder="بحث بالاسم أو الهاتف..." />
-    </div>
-    <div class="col-md-3 form-check d-flex align-items-center">
-        <input type="checkbox" name="includeInactive" value="true" class="form-check-input me-2" id="includeInactive" checked="@((bool)ViewData["IncludeInactive"]!)" />
-        <label class="form-check-label" for="includeInactive">شامل غير النشط</label>
-    </div>
-    <div class="col-md-2">
-        <button type="submit" class="btn btn-outline-primary w-100">بحث</button>
-    </div>
-</form>
+<partial name="_SearchFilterForm" model='new SearchFilterFormModel((string?)ViewData["Search"], (bool)ViewData["IncludeInactive"]!, "بحث بالاسم أو الهاتف...")' />
 
 <div class="table-responsive">
 <table class="table table-striped align-middle">

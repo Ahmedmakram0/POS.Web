@@ -10,10 +10,15 @@
     <a class="btn btn-primary" asp-action="Create">إضافة فئة</a>
 </div>
 
-<div class="form-check mb-3">
-    <input class="form-check-input" type="checkbox" id="includeInactive" onchange="location.href='@Url.Action("Index")?includeInactive=' + this.checked" @(includeInactive ? "checked" : "") />
-    <label class="form-check-label" for="includeInactive">عرض الفئات غير النشطة</label>
-</div>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3 form-check d-flex align-items-center">
+        <input type="checkbox" name="includeInactive" value="true" class="form-check-input me-2" id="includeInactive" checked="@includeInactive" />
+        <label class="form-check-label" for="includeInactive">عرض الفئات غير النشطة</label>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100">بحث</button>
+    </div>
+</form>
 
 <div class="table-responsive">
 <table class="table table-striped align-middle">
@@ -43,12 +48,7 @@
                 <td>@category.ProductCount</td>
                 <td class="text-end">
                     <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@category.Id">تعديل</a>
-                    <form asp-action="ToggleStatus" asp-route-id="@category.Id" method="post" class="d-inline">
-                        <input type="hidden" name="currentStatus" value="@category.Status" />
-                        <button type="submit" class="btn btn-sm btn-outline-secondary">
-                            @(category.Status == EntityStatus.Active ? "تعطيل" : "تفعيل")
-                        </button>
-                    </form>
+                    <partial name="_ToggleStatusButton" model="new ToggleStatusButtonModel(category.Id, category.Status)" />
                 </td>
             </tr>
         }

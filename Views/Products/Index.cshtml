@@ -104,12 +104,7 @@
                 <td class="text-end">
                     <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@product.Id">تعديل</a>
                     <a class="btn btn-sm btn-outline-info" asp-action="AdjustStock" asp-route-id="@product.Id">تعديل المخزون</a>
-                    <form asp-action="ToggleStatus" asp-route-id="@product.Id" method="post" class="d-inline">
-                        <input type="hidden" name="currentStatus" value="@product.Status" />
-                        <button type="submit" class="btn btn-sm btn-outline-secondary">
-                            @(product.Status == EntityStatus.Active ? "تعطيل" : "تفعيل")
-                        </button>
-                    </form>
+                    <partial name="_ToggleStatusButton" model="new ToggleStatusButtonModel(product.Id, product.Status)" />
                 </td>
             </tr>
         }

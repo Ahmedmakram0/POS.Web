@@ -17,44 +17,7 @@
         <input asp-for="FullName" class="form-control" />
         <span asp-validation-for="FullName" class="text-danger"></span>
     </div>
-    <div class="mb-3">
-        <label asp-for="Role" class="form-label"></label>
-        <select asp-for="Role" class="form-select">
-            @foreach (var role in Model.AvailableRoles)
-            {
-                <option value="@role">@role</option>
-            }
-        </select>
-    </div>
-    <div class="mb-3">
-        <label asp-for="MaxDiscountPercent" class="form-label"></label>
-        <input asp-for="MaxDiscountPercent" class="form-control" type="number" step="0.1" />
-    </div>
-    <div class="form-check mb-2">
-        <input asp-for="CanDiscountToMinimumPrice" class="form-check-input" />
-        <label asp-for="CanDiscountToMinimumPrice" class="form-check-label"></label>
-    </div>
-    <div class="form-check mb-3">
-        <input asp-for="CanOverrideMinimumPrice" class="form-check-input" />
-        <label asp-for="CanOverrideMinimumPrice" class="form-check-label"></label>
-    </div>
-
-    <div class="mb-3" id="allowedPagesGroup">
-        <label class="form-label">الصفحات المسموح بفتحها</label>
-        <div class="form-text mb-2">تُطبَّق فقط على دور "Cashier". المدراء لديهم وصول كامل دائماً.</div>
-        <div class="row row-cols-2 row-cols-md-3 g-2">
-            @foreach (var pg in Model.AvailablePages)
-            {
-                <div class="col">
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" name="AllowedPages" value="@pg.Key" id="page_@pg.Key"
-                               checked="@Model.AllowedPages.Contains(pg.Key)" />
-                        <label class="form-check-label" for="page_@pg.Key">@pg.Label</label>
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
+    <partial name="_PermissionsFields" model="Model" />
 
     <button type="submit" class="btn btn-primary">حفظ</button>
     <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
@@ -62,15 +25,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        (function () {
-            var roleSelect = document.querySelector('[name="Role"]');
-            var group = document.getElementById('allowedPagesGroup');
-            function toggle() {
-                group.style.display = roleSelect.value === 'Cashier' ? '' : 'none';
-            }
-            roleSelect.addEventListener('change', toggle);
-            toggle();
-        })();
-    </script>
 }

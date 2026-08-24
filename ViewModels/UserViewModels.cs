@@ -2,7 +2,20 @@ using System.ComponentModel.DataAnnotations;
 
 namespace POS.Web.ViewModels;
 
-public class UserCreateViewModel
+// Shared by UserCreateViewModel/UserEditViewModel so Views/Users/_PermissionsFields.cshtml
+// can render the role/discount/allowed-pages block once for both Create and Edit.
+public interface IUserPermissionsFormModel
+{
+    string Role { get; set; }
+    decimal MaxDiscountPercent { get; set; }
+    bool CanDiscountToMinimumPrice { get; set; }
+    bool CanOverrideMinimumPrice { get; set; }
+    List<string> AllowedPages { get; set; }
+    List<string> AvailableRoles { get; set; }
+    (string Key, string Label)[] AvailablePages { get; set; }
+}
+
+public class UserCreateViewModel : IUserPermissionsFormModel
 {
     [Required(ErrorMessage = "الاسم الكامل مطلوب")]
     [Display(Name = "الاسم الكامل")]
@@ -39,7 +52,7 @@ public class UserCreateViewModel
     public (string Key, string Label)[] AvailablePages { get; set; } = [];
 }
 
-public class UserEditViewModel
+public class UserEditViewModel : IUserPermissionsFormModel
 {
     public string Id { get; set; } = string.Empty;
 
