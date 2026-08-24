@@ -70,6 +70,7 @@ public enum FinancialTransactionType
     CashCreditPayment,
     DigitalCreditPayment,
     SupplierPayment,
+    SupplierInvoiceCredit,
     CustomerRefund,
     Expense,
     ManagerWithdrawal,

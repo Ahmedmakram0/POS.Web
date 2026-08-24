@@ -115,6 +115,13 @@ public class PurchaseInvoiceService(ApplicationDbContext db, IInventoryService i
                 amountPaid, createdByUserId, $"PurchaseInvoice#{invoice.Id}");
         }
 
+        if (invoice.OutstandingAmount > 0)
+        {
+            await financial.PostAsync(
+                FinancialAccountType.SupplierPayables, FinancialTransactionType.SupplierInvoiceCredit, TransactionDirection.In,
+                invoice.OutstandingAmount, createdByUserId, $"PurchaseInvoice#{invoice.Id}");
+        }
+
         await dbTransaction.CommitAsync();
         return invoice;
     }
@@ -158,6 +165,9 @@ public class PurchaseInvoiceService(ApplicationDbContext db, IInventoryService i
 
         await financial.PostAsync(
             method.ToAccountType(), FinancialTransactionType.SupplierPayment, TransactionDirection.Out,
+            amount, paidByUserId, $"PurchaseInvoice#{invoice.Id}");
+        await financial.PostAsync(
+            FinancialAccountType.SupplierPayables, FinancialTransactionType.SupplierPayment, TransactionDirection.Out,
             amount, paidByUserId, $"PurchaseInvoice#{invoice.Id}");
 
         await dbTransaction.CommitAsync();
