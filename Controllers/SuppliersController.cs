@@ -13,7 +13,7 @@ public class SuppliersController(ISupplierService supplierService, IPurchaseInvo
     {
         ViewData["Search"] = search;
         ViewData["IncludeInactive"] = includeInactive;
-        return View(await supplierService.GetAllAsync(includeInactive, search));
+        return View(await supplierService.GetAllForListAsync(includeInactive, search));
     }
 
     public async Task<IActionResult> Details(int id)

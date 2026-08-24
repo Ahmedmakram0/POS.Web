@@ -15,7 +15,7 @@ public class CustomersController(ICustomerService customerService) : Controller
     {
         ViewData["Search"] = search;
         ViewData["IncludeInactive"] = includeInactive;
-        return View(await customerService.GetAllAsync(includeInactive, search));
+        return View(await customerService.GetAllForListAsync(includeInactive, search));
     }
 
     public async Task<IActionResult> Details(int id)

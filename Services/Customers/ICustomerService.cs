@@ -5,10 +5,12 @@ namespace POS.Web.Services.Customers;
 
 public record CreateCustomerRequest(string Name, string? Phone, string? Address, string? Notes);
 public record UpdateCustomerRequest(string Name, string? Phone, string? Address, string? Notes);
+public record CustomerListItemDto(int Id, string Name, string? Phone, EntityStatus Status);
 
 public interface ICustomerService
 {
     Task<List<Customer>> GetAllAsync(bool includeInactive = false, string? search = null);
+    Task<List<CustomerListItemDto>> GetAllForListAsync(bool includeInactive = false, string? search = null);
     Task<Customer?> GetByIdAsync(int id);
     Task<Customer> CreateAsync(CreateCustomerRequest request);
     Task<Customer> UpdateAsync(int id, UpdateCustomerRequest request);

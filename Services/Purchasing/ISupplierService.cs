@@ -5,10 +5,12 @@ namespace POS.Web.Services.Purchasing;
 
 public record CreateSupplierRequest(string Name, string? Phone, string? Email, string? Address, string? Notes);
 public record UpdateSupplierRequest(string Name, string? Phone, string? Email, string? Address, string? Notes);
+public record SupplierListItemDto(int Id, string Name, string? Phone, EntityStatus Status);
 
 public interface ISupplierService
 {
     Task<List<Supplier>> GetAllAsync(bool includeInactive = false, string? search = null);
+    Task<List<SupplierListItemDto>> GetAllForListAsync(bool includeInactive = false, string? search = null);
     Task<Supplier?> GetByIdAsync(int id);
     Task<Supplier> CreateAsync(CreateSupplierRequest request);
     Task<Supplier> UpdateAsync(int id, UpdateSupplierRequest request);

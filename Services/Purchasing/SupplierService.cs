@@ -12,6 +12,26 @@ public class SupplierService(ApplicationDbContext db) : NamedEntityServiceBase<S
     protected override IQueryable<Supplier> ApplySearch(IQueryable<Supplier> query, string term) =>
         query.Where(s => s.Name.Contains(term) || (s.Phone != null && s.Phone.Contains(term)));
 
+    public async Task<List<SupplierListItemDto>> GetAllForListAsync(bool includeInactive = false, string? search = null)
+    {
+        var query = Db.Suppliers.AsQueryable();
+
+        if (!includeInactive)
+        {
+            query = query.Where(s => s.Status == Models.Enums.EntityStatus.Active);
+        }
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(s => s.Name.Contains(term) || (s.Phone != null && s.Phone.Contains(term)));
+        }
+
+        return await query
+            .OrderBy(s => s.Name)
+            .Select(s => new SupplierListItemDto(s.Id, s.Name, s.Phone, s.Status))
+            .ToListAsync();
+    }
+
     public async Task<Supplier> CreateAsync(CreateSupplierRequest request)
     {
         var supplier = new Supplier

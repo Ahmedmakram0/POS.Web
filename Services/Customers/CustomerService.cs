@@ -15,6 +15,26 @@ public class CustomerService(ApplicationDbContext db, IFinancialAccountService f
     protected override IQueryable<Customer> ApplySearch(IQueryable<Customer> query, string term) =>
         query.Where(c => c.Name.Contains(term) || (c.Phone != null && c.Phone.Contains(term)));
 
+    public async Task<List<CustomerListItemDto>> GetAllForListAsync(bool includeInactive = false, string? search = null)
+    {
+        var query = Db.Customers.AsQueryable();
+
+        if (!includeInactive)
+        {
+            query = query.Where(c => c.Status == EntityStatus.Active);
+        }
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(c => c.Name.Contains(term) || (c.Phone != null && c.Phone.Contains(term)));
+        }
+
+        return await query
+            .OrderBy(c => c.Name)
+            .Select(c => new CustomerListItemDto(c.Id, c.Name, c.Phone, c.Status))
+            .ToListAsync();
+    }
+
     public async Task<Customer> CreateAsync(CreateCustomerRequest request)
     {
         var customer = new Customer { Name = request.Name, Phone = request.Phone, Address = request.Address, Notes = request.Notes };
