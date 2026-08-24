@@ -27,6 +27,27 @@ public class PurchaseInvoiceService(ApplicationDbContext db, IInventoryService i
         return await query.OrderByDescending(p => p.CreatedAt).ToListAsync();
     }
 
+    public async Task<List<PurchaseInvoiceListItemDto>> GetAllForListAsync(int? supplierId = null, PurchaseInvoiceStatus? status = null)
+    {
+        var query = db.PurchaseInvoices.AsQueryable();
+
+        if (supplierId is int sId)
+        {
+            query = query.Where(p => p.SupplierId == sId);
+        }
+        if (status is PurchaseInvoiceStatus s)
+        {
+            query = query.Where(p => p.Status == s);
+        }
+
+        return await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new PurchaseInvoiceListItemDto(
+                p.Id, p.InvoiceNumber, p.SupplierInvoiceReference, p.Supplier!.Name,
+                p.CreatedAt, p.Total, p.AmountPaid, p.OutstandingAmount, p.Status))
+            .ToListAsync();
+    }
+
     public Task<PurchaseInvoice?> GetByIdAsync(int id) =>
         db.PurchaseInvoices
             .Include(p => p.Supplier)

@@ -25,7 +25,7 @@ public class SuppliersController(ISupplierService supplierService, IPurchaseInvo
         }
 
         ViewData["OutstandingBalance"] = await supplierService.GetOutstandingBalanceAsync(id);
-        ViewData["Invoices"] = await purchaseInvoiceService.GetAllAsync(supplierId: id);
+        ViewData["Invoices"] = await purchaseInvoiceService.GetAllForListAsync(supplierId: id);
         return View(supplier);
     }
 

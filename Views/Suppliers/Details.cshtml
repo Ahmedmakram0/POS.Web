@@ -1,8 +1,9 @@
+@using POS.Web.Services.Purchasing
 @model Supplier
 @{
     ViewData["Title"] = Model.Name;
     var outstanding = (decimal)ViewData["OutstandingBalance"]!;
-    var invoices = (List<PurchaseInvoice>)ViewData["Invoices"]!;
+    var invoices = (List<PurchaseInvoiceListItemDto>)ViewData["Invoices"]!;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">

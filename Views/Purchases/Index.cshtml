@@ -1,4 +1,5 @@
-@model List<PurchaseInvoice>
+@using POS.Web.Services.Purchasing
+@model List<PurchaseInvoiceListItemDto>
 @{
     ViewData["Title"] = "فواتير الشراء";
 }
@@ -28,7 +29,7 @@
             <tr>
                 <td>@invoice.InvoiceNumber</td>
                 <td>@invoice.SupplierInvoiceReference</td>
-                <td>@invoice.Supplier?.Name</td>
+                <td>@invoice.SupplierName</td>
                 <td>@invoice.CreatedAt.ToLocalTime().ToString("g")</td>
                 <td>@invoice.Total.ToString("N2")</td>
                 <td>@invoice.OutstandingAmount.ToString("N2")</td>

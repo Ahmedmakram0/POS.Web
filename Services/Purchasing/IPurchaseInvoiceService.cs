@@ -12,9 +12,14 @@ public record CreatePurchaseInvoiceRequest(
     PaymentMethod? PaymentMethod,
     string? SupplierInvoiceReference = null);
 
+public record PurchaseInvoiceListItemDto(
+    int Id, string InvoiceNumber, string? SupplierInvoiceReference, string? SupplierName,
+    DateTime CreatedAt, decimal Total, decimal AmountPaid, decimal OutstandingAmount, PurchaseInvoiceStatus Status);
+
 public interface IPurchaseInvoiceService
 {
     Task<List<PurchaseInvoice>> GetAllAsync(int? supplierId = null, PurchaseInvoiceStatus? status = null);
+    Task<List<PurchaseInvoiceListItemDto>> GetAllForListAsync(int? supplierId = null, PurchaseInvoiceStatus? status = null);
     Task<PurchaseInvoice?> GetByIdAsync(int id);
 
     /// <summary>Creates the invoice, receives stock for every line, updates product cost prices, and posts any immediate payment.</summary>

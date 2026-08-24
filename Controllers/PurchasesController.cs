@@ -13,7 +13,7 @@ public class PurchasesController(
     : Controller
 {
 
-    public async Task<IActionResult> Index() => View(await purchaseInvoiceService.GetAllAsync());
+    public async Task<IActionResult> Index() => View(await purchaseInvoiceService.GetAllForListAsync());
 
     public async Task<IActionResult> Details(int id)
     {
