@@ -1,0 +1,136 @@
+@model Sale
+@{
+    Layout = null;
+    var receiptSettings = (ReceiptSettings)ViewData["ReceiptSettings"]!;
+    var systemSettings = (SystemSettings)ViewData["SystemSettings"]!;
+    var cashierName = (string)ViewData["CashierName"]!;
+    var widthMm = receiptSettings.ReceiptWidthMm;
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>@receiptSettings.ReceiptTitle - @Model.InvoiceNumber</title>
+    <style>
+        @@page { size: @(widthMm)mm auto; margin: 2mm; }
+        body {
+            font-family: Tahoma, Arial, sans-serif;
+            width: @(widthMm)mm;
+            margin: 0 auto;
+            font-size: 12px;
+            color: #000;
+        }
+        .center { text-align: center; }
+        .store-name { font-size: 16px; font-weight: bold; }
+        hr { border: none; border-top: 1px dashed #000; margin: 6px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 2px 0; vertical-align: top; }
+        .items td { font-size: 11px; }
+        .totals td { padding-top: 2px; }
+        .totals .label { text-align: right; }
+        .totals .value { text-align: left; font-weight: bold; }
+        .toolbar { text-align: center; margin: 10px 0; }
+        @@media print {
+            .toolbar { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button onclick="window.print()">طباعة</button>
+    </div>
+
+    <div class="center">
+        @if (!string.IsNullOrWhiteSpace(receiptSettings.LogoUrl))
+        {
+            <img src="@receiptSettings.LogoUrl" style="max-width:100%;max-height:60px;" />
+        }
+        <div class="store-name">@systemSettings.StoreName</div>
+        @if (!string.IsNullOrWhiteSpace(systemSettings.StoreAddress))
+        {
+            <div>@systemSettings.StoreAddress</div>
+        }
+        @if (!string.IsNullOrWhiteSpace(systemSettings.StorePhone))
+        {
+            <div>@systemSettings.StorePhone</div>
+        }
+        @if (!string.IsNullOrWhiteSpace(receiptSettings.TaxInfo))
+        {
+            <div>@receiptSettings.TaxInfo</div>
+        }
+    </div>
+
+    <hr />
+
+    <div class="center fw-bold">@receiptSettings.ReceiptTitle</div>
+    <table>
+        <tr><td>رقم الفاتورة</td><td style="text-align:left">@Model.InvoiceNumber</td></tr>
+        <tr><td>التاريخ</td><td style="text-align:left">@Model.CreatedAt.ToLocalTime().ToString("g")</td></tr>
+        <tr><td>الكاشير</td><td style="text-align:left">@cashierName</td></tr>
+        @if (Model.Customer is not null)
+        {
+            <tr><td>العميل</td><td style="text-align:left">@Model.Customer.Name</td></tr>
+        }
+    </table>
+
+    <hr />
+
+    <table class="items">
+        <thead>
+            <tr>
+                <td>الصنف</td>
+                <td>كمية</td>
+                <td>سعر</td>
+                <td style="text-align:left">إجمالي</td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@item.ProductNameSnapshot</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.FinalUnitPrice.ToString("N2")</td>
+                    <td style="text-align:left">@item.LineTotal.ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <hr />
+
+    <table class="totals">
+        <tr><td class="label">الإجمالي الفرعي</td><td class="value">@Model.SubtotalBeforeDiscount.ToString("N2")</td></tr>
+        <tr><td class="label">الخصم</td><td class="value">@Model.TotalDiscount.ToString("N2")</td></tr>
+        <tr style="font-size:14px"><td class="label">الإجمالي</td><td class="value">@Model.Total.ToString("N2")</td></tr>
+    </table>
+
+    <hr />
+
+    <table>
+        @foreach (var payment in Model.Payments)
+        {
+            <tr><td>@payment.Method</td><td style="text-align:left">@payment.Amount.ToString("N2")</td></tr>
+        }
+        @if (Model.CreditAmount > 0)
+        {
+            <tr><td>آجل</td><td style="text-align:left">@Model.CreditAmount.ToString("N2")</td></tr>
+        }
+        @if (Model.ChangeGiven > 0)
+        {
+            <tr><td>الباقي</td><td style="text-align:left">@Model.ChangeGiven.ToString("N2")</td></tr>
+        }
+    </table>
+
+    @if (!string.IsNullOrWhiteSpace(receiptSettings.FooterMessage))
+    {
+        <hr />
+        <div class="center">@receiptSettings.FooterMessage</div>
+    }
+
+    <script>
+        window.addEventListener('load', () => setTimeout(() => window.print(), 200));
+    </script>
+</body>
+</html>

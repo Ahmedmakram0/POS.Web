@@ -1,0 +1,23 @@
+@model POS.Web.ViewModels.SafeTransactionFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="mb-3">
+    <label asp-for="AccountType" class="form-label"></label>
+    <select asp-for="AccountType" class="form-select">
+        <option value="@FinancialAccountType.CashSafe">الخزينة النقدية</option>
+        <option value="@FinancialAccountType.InstaPay">إنستاباي</option>
+        <option value="@FinancialAccountType.VodafoneCash">فودافون كاش</option>
+    </select>
+</div>
+<div class="mb-3">
+    <label asp-for="Amount" class="form-label"></label>
+    <input asp-for="Amount" class="form-control" type="number" step="0.01" />
+    <span asp-validation-for="Amount" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="Description" class="form-label"></label>
+    <input asp-for="Description" class="form-control" />
+</div>
+
+<button type="submit" class="btn btn-primary">حفظ</button>
+<a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>

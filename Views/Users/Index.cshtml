@@ -1,0 +1,52 @@
+@model List<ApplicationUser>
+@{
+    ViewData["Title"] = "المستخدمون";
+    var rolesByUser = (Dictionary<string, IList<string>>)ViewData["RolesByUser"]!;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>المستخدمون</h2>
+    <a class="btn btn-primary" asp-action="Create">إضافة مستخدم</a>
+</div>
+
+<div class="table-responsive">
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>الاسم</th>
+            <th>البريد الإلكتروني</th>
+            <th>الدور</th>
+            <th>الحالة</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.FullName</td>
+                <td>@user.Email</td>
+                <td>@string.Join(", ", rolesByUser[user.Id])</td>
+                <td>
+                    @if (user.IsSuspended)
+                    {
+                        <span class="badge text-bg-danger">موقوف</span>
+                    }
+                    else
+                    {
+                        <span class="badge text-bg-success">نشط</span>
+                    }
+                </td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@user.Id">تعديل</a>
+                    <form asp-action="ToggleSuspend" asp-route-id="@user.Id" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                            @(user.IsSuspended ? "إلغاء الإيقاف" : "إيقاف")
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>

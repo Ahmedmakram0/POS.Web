@@ -1,0 +1,80 @@
+@model List<FinancialTransaction>
+@{
+    ViewData["Title"] = "الخزينة";
+    var accounts = (List<FinancialAccount>)ViewData["Accounts"]!;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>الخزينة والحسابات المالية</h2>
+    <div>
+        <a class="btn btn-success" asp-action="Deposit">إيداع</a>
+        <a class="btn btn-outline-danger" asp-action="Withdraw">سحب</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    @foreach (var account in accounts)
+    {
+        <div class="col-md-2-4 col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">@account.Name</div>
+                    <div class="fs-4 fw-bold">@account.Balance.ToString("N2")</div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <select name="accountType" class="form-select">
+            <option value="">كل الحسابات</option>
+            @foreach (FinancialAccountType t in Enum.GetValues<FinancialAccountType>())
+            {
+                <option value="@t" selected="@(((FinancialAccountType?)ViewData["AccountType"]) == t)">@t</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="date" name="from" value="@ViewData["From"]" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <input type="date" name="to" value="@ViewData["To"]" class="form-control" />
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-primary w-100">بحث</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>التاريخ</th>
+            <th>الحساب</th>
+            <th>النوع</th>
+            <th>الاتجاه</th>
+            <th>المبلغ</th>
+            <th>المرجع</th>
+            <th>الوصف</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var t in Model)
+        {
+            <tr>
+                <td>@t.CreatedAt.ToLocalTime().ToString("g")</td>
+                <td>@t.FinancialAccount?.Name</td>
+                <td>@t.Type</td>
+                <td class="@(t.Direction == TransactionDirection.In ? "text-success" : "text-danger")">
+                    @(t.Direction == TransactionDirection.In ? "وارد" : "صادر")
+                </td>
+                <td>@t.Amount.ToString("N2")</td>
+                <td>@t.Reference</td>
+                <td>@t.Description</td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>

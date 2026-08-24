@@ -1,0 +1,14 @@
+@model POS.Web.ViewModels.SafeTransactionFormViewModel
+@{
+    ViewData["Title"] = "إيداع";
+}
+
+<h2 class="mb-4">إيداع مبلغ</h2>
+
+<form asp-action="Deposit" method="post" class="col-md-6">
+    <partial name="_TransactionForm" />
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

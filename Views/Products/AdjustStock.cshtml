@@ -1,0 +1,33 @@
+@model POS.Web.ViewModels.StockAdjustmentFormViewModel
+@{
+    ViewData["Title"] = "تعديل المخزون";
+}
+
+<h2 class="mb-4">تعديل مخزون: @Model.ProductName</h2>
+
+<form asp-action="AdjustStock" method="post" class="col-md-6">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="ProductId" />
+    <input type="hidden" asp-for="ProductName" />
+
+    <div class="mb-3">
+        <label asp-for="Type" class="form-label"></label>
+        <select asp-for="Type" class="form-select" asp-items="Html.GetEnumSelectList<StockMovementType>()"></select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="QuantityChange" class="form-label"></label>
+        <input asp-for="QuantityChange" class="form-control" type="number" />
+        <span asp-validation-for="QuantityChange" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Reason" class="form-label"></label>
+        <input asp-for="Reason" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">حفظ</button>
+    <a asp-action="Details" asp-route-id="@Model.ProductId" class="btn btn-outline-secondary">إلغاء</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

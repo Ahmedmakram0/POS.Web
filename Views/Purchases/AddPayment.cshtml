@@ -1,0 +1,35 @@
+@model POS.Web.ViewModels.SupplierPaymentFormViewModel
+@{
+    ViewData["Title"] = "تسجيل دفعة";
+}
+
+<h2 class="mb-4">تسجيل دفعة: @Model.InvoiceNumber</h2>
+<p class="text-muted">المتبقي: <strong>@Model.Outstanding.ToString("N2")</strong></p>
+
+<form asp-action="AddPayment" method="post" class="col-md-6">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="InvoiceId" />
+    <input type="hidden" asp-for="InvoiceNumber" />
+    <input type="hidden" asp-for="Outstanding" />
+
+    <div class="mb-3">
+        <label asp-for="Amount" class="form-label"></label>
+        <input asp-for="Amount" class="form-control" type="number" step="0.01" />
+        <span asp-validation-for="Amount" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Method" class="form-label"></label>
+        <select asp-for="Method" class="form-select">
+            <option value="@PaymentMethod.Cash">نقدي</option>
+            <option value="@PaymentMethod.InstaPay">إنستاباي</option>
+            <option value="@PaymentMethod.VodafoneCash">فودافون كاش</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">حفظ</button>
+    <a asp-action="Details" asp-route-id="@Model.InvoiceId" class="btn btn-outline-secondary">إلغاء</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

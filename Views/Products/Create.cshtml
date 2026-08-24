@@ -1,0 +1,14 @@
+@model POS.Web.ViewModels.ProductFormViewModel
+@{
+    ViewData["Title"] = "إضافة منتج";
+}
+
+<h2 class="mb-4">إضافة منتج</h2>
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    <partial name="_Form" />
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

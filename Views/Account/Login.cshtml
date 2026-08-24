@@ -1,0 +1,46 @@
+@model POS.Web.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "تسجيل الدخول";
+    Layout = "_Layout";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-sm-8 col-md-5 col-lg-4">
+        <div class="text-center mb-4 mt-3 mt-md-5">
+            <div class="display-6"><i class="bi bi-shop text-primary"></i></div>
+            <h3 class="mt-2 mb-0">تسجيل الدخول</h3>
+            <div class="text-muted small">نظام نقاط البيع</div>
+        </div>
+        <div class="card">
+            <div class="card-body p-4">
+                <form asp-controller="Account" asp-action="Login" method="post">
+                    <input type="hidden" asp-for="ReturnUrl" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" autofocus />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input asp-for="RememberMe" class="form-check-input" />
+                        <label asp-for="RememberMe" class="form-check-label"></label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-box-arrow-in-left"></i> دخول</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

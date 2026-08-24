@@ -1,0 +1,60 @@
+@model List<Sale>
+@{
+    ViewData["Title"] = "المبيعات";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>المبيعات</h2>
+    <a class="btn btn-primary" asp-controller="Pos" asp-action="Index">فتح نقطة البيع</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <label class="form-label">من تاريخ</label>
+        <input type="date" name="from" value="@ViewData["From"]" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">إلى تاريخ</label>
+        <input type="date" name="to" value="@ViewData["To"]" class="form-control" />
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-outline-primary w-100">بحث</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>رقم الفاتورة</th>
+            <th>التاريخ</th>
+            <th>العميل</th>
+            <th>الإجمالي</th>
+            <th>الحالة</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sale in Model)
+        {
+            <tr class="@(sale.Status == SaleStatus.Voided ? "table-secondary text-decoration-line-through" : "")">
+                <td>@sale.InvoiceNumber</td>
+                <td>@sale.CreatedAt.ToLocalTime().ToString("g")</td>
+                <td>@sale.Customer?.Name</td>
+                <td>@sale.Total.ToString("N2")</td>
+                <td>@sale.Status</td>
+                <td>
+                    @if (sale.Items.Any(i => i.MinimumPriceOverridden))
+                    {
+                        <span class="badge text-bg-danger" title="تحتوي هذه الفاتورة على أصناف بيعت بأقل من الحد الأدنى">أقل من الحد الأدنى</span>
+                    }
+                </td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@sale.Id">عرض</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>

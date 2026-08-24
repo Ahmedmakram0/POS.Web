@@ -1,0 +1,25 @@
+@model POS.Web.ViewModels.SaleVoidFormViewModel
+@{
+    ViewData["Title"] = "إلغاء فاتورة";
+}
+
+<h2 class="mb-4">إلغاء فاتورة @Model.InvoiceNumber</h2>
+
+<form asp-action="Void" method="post" class="col-md-6">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="SaleId" />
+    <input type="hidden" asp-for="InvoiceNumber" />
+
+    <div class="mb-3">
+        <label asp-for="Reason" class="form-label"></label>
+        <textarea asp-for="Reason" class="form-control"></textarea>
+        <span asp-validation-for="Reason" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-danger">تأكيد الإلغاء</button>
+    <a asp-action="Details" asp-route-id="@Model.SaleId" class="btn btn-outline-secondary">تراجع</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

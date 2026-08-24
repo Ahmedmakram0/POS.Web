@@ -1,0 +1,96 @@
+@model Product
+@{
+    ViewData["Title"] = Model.Name;
+    var movements = (List<StockMovement>)ViewData["Movements"]!;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>@Model.Name</h2>
+    <div>
+        <a class="btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model.Id">تعديل</a>
+        <a class="btn btn-outline-info" asp-action="AdjustStock" asp-route-id="@Model.Id">تعديل المخزون</a>
+        <a class="btn btn-outline-dark" asp-action="PrintLabels" asp-route-id="@Model.Id">طباعة ملصقات الباركود</a>
+        <a class="btn btn-outline-secondary" asp-action="Index">رجوع</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+    {
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="text-muted small">صورة المنتج</div>
+                    <img src="@Model.ImageUrl" alt="@Model.Name" style="max-width:100%;max-height:150px;object-fit:contain;" class="rounded" />
+                </div>
+            </div>
+        </div>
+    }
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="text-muted small">الباركود</div>
+                <svg id="barcodeSvg"></svg>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100"><div class="card-body"><div class="text-muted small">سعر البيع</div><div class="fs-5">@Model.SellingPrice.ToString("N2")</div></div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100"><div class="card-body"><div class="text-muted small">سعر التكلفة</div><div class="fs-5">@Model.CostPrice.ToString("N2")</div></div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100"><div class="card-body"><div class="text-muted small">المخزون الحالي</div><div class="fs-5">@Model.StockQuantity</div></div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">الفرع والموقع</div>
+                <div class="fs-6">@(Model.Store?.Name ?? "غير محدد")</div>
+                @if (!string.IsNullOrWhiteSpace(Model.Location))
+                {
+                    <div class="text-muted small">@Model.Location</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="mb-3">حركات المخزون</h4>
+<div class="table-responsive">
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>التاريخ</th>
+            <th>النوع</th>
+            <th>التغيير</th>
+            <th>قبل</th>
+            <th>بعد</th>
+            <th>المرجع</th>
+            <th>السبب</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var movement in movements)
+        {
+            <tr>
+                <td>@movement.CreatedAt.ToLocalTime().ToString("g")</td>
+                <td>@movement.Type</td>
+                <td class="@(movement.QuantityChange >= 0 ? "text-success" : "text-danger")">@movement.QuantityChange</td>
+                <td>@movement.QuantityBefore</td>
+                <td>@movement.QuantityAfter</td>
+                <td>@movement.Reference</td>
+                <td>@movement.Reason</td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script>
+    JsBarcode('#barcodeSvg', '@Model.Barcode', { format: 'CODE128', width: 2, height: 60, displayValue: true, fontSize: 14 });
+</script>
+}

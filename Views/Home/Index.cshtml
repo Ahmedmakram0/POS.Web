@@ -1,0 +1,187 @@
+@model POS.Web.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "لوحة التحكم";
+    var maxTrend = Model.SalesTrend.Count > 0 ? Math.Max(Model.SalesTrend.Max(p => p.Total), 1) : 1;
+    var maxTopProduct = Model.TopProducts.Count > 0 ? Math.Max(Model.TopProducts.Max(p => p.Revenue), 1) : 1;
+}
+
+<h2 class="mb-4">لوحة التحكم</h2>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card text-bg-primary h-100">
+            <div class="card-body">
+                <div class="fs-6 text-muted"><i class="bi bi-cash-coin"></i> مبيعات اليوم</div>
+                <div class="fs-3 fw-bold">@Model.TodaySalesTotal.ToString("N2")</div>
+                <div class="small text-muted">@Model.TodayTransactionsCount عملية بيع</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-bg-secondary h-100">
+            <div class="card-body">
+                <div class="fs-6 text-muted"><i class="bi bi-calendar3"></i> مبيعات الشهر</div>
+                <div class="fs-3 fw-bold">@Model.MonthSalesTotal.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+    <a class="col-6 col-md-3 text-decoration-none" asp-controller="Products" asp-action="Index" asp-route-onlyLowStock="true">
+        <div class="card text-bg-warning h-100">
+            <div class="card-body">
+                <div class="fs-6 text-muted"><i class="bi bi-exclamation-triangle"></i> مخزون منخفض</div>
+                <div class="fs-3 fw-bold">@Model.LowStockProducts</div>
+            </div>
+        </div>
+    </a>
+    <a class="col-6 col-md-3 text-decoration-none" asp-controller="Products" asp-action="Index" asp-route-onlyLowStock="true">
+        <div class="card text-bg-danger h-100">
+            <div class="card-body">
+                <div class="fs-6 text-muted"><i class="bi bi-x-octagon"></i> نفد من المخزون</div>
+                <div class="fs-3 fw-bold">@Model.OutOfStockProducts</div>
+            </div>
+        </div>
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-lg-7">
+        <div class="card h-100">
+            <div class="card-header">اتجاه المبيعات (آخر 14 يوم)</div>
+            <div class="card-body">
+                @if (Model.SalesTrend.Count == 0)
+                {
+                    <p class="text-muted mb-0">لا توجد بيانات كافية.</p>
+                }
+                else
+                {
+                    <div class="d-flex align-items-end gap-1" style="height: 140px;">
+                        @foreach (var point in Model.SalesTrend)
+                        {
+                            var heightPct = maxTrend > 0 ? (double)(point.Total / maxTrend) * 100 : 0;
+                            <div class="flex-fill d-flex flex-column justify-content-end align-items-center" style="height: 100%;" title="@point.Date.ToString("yyyy-MM-dd"): @point.Total.ToString("N2")">
+                                <div class="bg-primary rounded-top w-100" style="height: @(Math.Max(heightPct, 2))%; min-height: 2px;"></div>
+                            </div>
+                        }
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted mt-2">
+                        <span>@Model.SalesTrend.First().Date.ToString("MM/dd")</span>
+                        <span>@Model.SalesTrend.Last().Date.ToString("MM/dd")</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-5">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-bell text-warning"></i> تنبيهات المخزون</span>
+                <a class="small" asp-controller="Products" asp-action="Index" asp-route-onlyLowStock="true">عرض الكل</a>
+            </div>
+            <div class="card-body">
+                @if (Model.StockAlerts.Count == 0)
+                {
+                    <p class="text-muted mb-0">لا توجد تنبيهات، المخزون في حالة جيدة.</p>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var alert in Model.StockAlerts)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <a class="text-truncate" asp-controller="Products" asp-action="Details" asp-route-id="@alert.ProductId">@alert.Name</a>
+                                @if (alert.IsOutOfStock)
+                                {
+                                    <span class="badge text-bg-danger">نفد</span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-warning">متبقي @alert.StockQuantity</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="card h-100">
+            <div class="card-header">الأكثر مبيعاً (هذا الشهر)</div>
+            <div class="card-body">
+                @if (Model.TopProducts.Count == 0)
+                {
+                    <p class="text-muted mb-0">لا توجد بيانات كافية.</p>
+                }
+                else
+                {
+                    @foreach (var product in Model.TopProducts)
+                    {
+                        var widthPct = maxTopProduct > 0 ? (double)(product.Revenue / maxTopProduct) * 100 : 0;
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between small">
+                                <span>@product.Name</span>
+                                <span class="fw-bold">@product.Revenue.ToString("N2") <span class="text-muted">(@product.QuantitySold)</span></span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: @widthPct%"></div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="mb-3">الأرصدة المالية</h4>
+<div class="row g-3">
+    <div class="col-6 col-md-4 col-lg-2-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small"><i class="bi bi-wallet2"></i> الخزينة النقدية</div>
+                <div class="fs-5 fw-bold">@Model.SafeBalance.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small"><i class="bi bi-phone"></i> إنستاباي</div>
+                <div class="fs-5 fw-bold">@Model.InstaPayBalance.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small"><i class="bi bi-phone"></i> فودافون كاش</div>
+                <div class="fs-5 fw-bold">@Model.VodafoneCashBalance.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small"><i class="bi bi-people"></i> مديونية العملاء</div>
+                <div class="fs-5 fw-bold">@Model.CustomerReceivablesBalance.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small"><i class="bi bi-truck"></i> مستحقات الموردين</div>
+                <div class="fs-5 fw-bold">@Model.SupplierPayablesBalance.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4 d-flex gap-2">
+    <a class="btn btn-primary btn-lg" asp-controller="Pos" asp-action="Index">
+        <i class="bi bi-cart-check-fill"></i> فتح نقطة البيع
+    </a>
+</div>

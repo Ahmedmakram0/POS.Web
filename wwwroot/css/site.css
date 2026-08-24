@@ -1,0 +1,259 @@
+:root {
+  --brand: #4f46e5;
+  --brand-dark: #3730a3;
+  --brand-light: #eef2ff;
+  --bg: #f4f5fa;
+  --surface: #ffffff;
+  --border: #e5e7eb;
+  --text: #1f2430;
+  --text-muted: #6b7280;
+  --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow: 0 4px 12px rgba(16, 24, 40, 0.08);
+  --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.12);
+}
+
+html {
+  font-size: 15px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+body {
+  font-family: "Cairo", "Segoe UI", Tahoma, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  margin: 0;
+  padding-bottom: 4rem;
+}
+
+/* ---------- Navbar ---------- */
+.navbar {
+  background: linear-gradient(135deg, var(--brand-dark), var(--brand)) !important;
+  box-shadow: var(--shadow);
+  padding-top: 0.65rem;
+  padding-bottom: 0.65rem;
+}
+
+.navbar-brand {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.navbar .nav-link {
+  border-radius: 999px;
+  padding: 0.45rem 1rem !important;
+  margin: 0 0.15rem;
+  transition: background-color 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.navbar .dropdown-menu {
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 0.4rem;
+}
+
+.navbar .dropdown-item {
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+}
+
+.navbar .dropdown-item:hover {
+  background-color: var(--brand-light);
+}
+
+/* ---------- Layout ---------- */
+main {
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+h1, h2, h3, h4, h5 {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow);
+}
+
+.card-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+  border-top-left-radius: var(--radius) !important;
+  border-top-right-radius: var(--radius) !important;
+}
+
+/* Dashboard-style stat tiles: colored left accent instead of a solid fill. */
+.card.text-bg-primary,
+.card.text-bg-secondary,
+.card.text-bg-warning,
+.card.text-bg-danger {
+  color: var(--text) !important;
+  background: var(--surface) !important;
+  border-inline-start: 4px solid var(--brand);
+}
+.card.text-bg-secondary { border-inline-start-color: #64748b; }
+.card.text-bg-warning { border-inline-start-color: #d97706; }
+.card.text-bg-danger { border-inline-start-color: #dc2626; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  padding: 0.5rem 1.1rem;
+}
+
+.btn-sm {
+  border-radius: 0.4rem;
+  padding: 0.3rem 0.7rem;
+}
+
+.btn-primary {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.btn-primary:hover {
+  background: var(--brand-dark);
+  border-color: var(--brand-dark);
+}
+
+.btn-lg {
+  border-radius: var(--radius);
+}
+
+/* ---------- Forms ---------- */
+.form-control, .form-select {
+  border-radius: var(--radius-sm);
+  border-color: var(--border);
+  padding: 0.55rem 0.85rem;
+}
+
+.form-control:focus, .form-select:focus, .form-check-input:focus,
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus {
+  box-shadow: 0 0 0 0.2rem var(--brand-light);
+  border-color: var(--brand);
+}
+
+.form-label {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+/* ---------- Tables ---------- */
+.table {
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.table thead th {
+  background: #f9fafb;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-responsive {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  background: var(--surface);
+}
+
+.table-responsive .table {
+  box-shadow: none;
+}
+
+/* ---------- Badges ---------- */
+.badge {
+  border-radius: 999px;
+  font-weight: 600;
+  padding: 0.4em 0.8em;
+}
+
+/* ---------- Alerts ---------- */
+.alert {
+  border: none;
+  border-radius: var(--radius);
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Bootstrap's 12-column grid has no /5 fraction; used for 5-tile balance rows on wide screens. */
+@media (min-width: 992px) {
+  .col-lg-2-4 {
+    flex: 0 0 auto;
+    width: 20%;
+  }
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 767.98px) {
+  main {
+    padding-inline: 0.25rem;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+  }
+
+  .btn {
+    padding: 0.5rem 0.85rem;
+  }
+
+  /* Action buttons in table rows wrap onto their own row instead of overflowing. */
+  td.text-end {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    justify-content: flex-end;
+  }
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}

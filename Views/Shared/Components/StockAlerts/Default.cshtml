@@ -1,0 +1,51 @@
+@model POS.Web.ViewModels.StockAlertsViewModel
+
+<li class="nav-item dropdown">
+    <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-label="تنبيهات المخزون">
+        <i class="bi bi-bell fs-5"></i>
+        @if (Model.TotalCount > 0)
+        {
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-danger">
+                @(Model.TotalCount > 99 ? "99+" : Model.TotalCount.ToString())
+            </span>
+        }
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" style="min-width: 320px;">
+        <li><h6 class="dropdown-header">تنبيهات المخزون</h6></li>
+        @if (Model.TotalCount == 0)
+        {
+            <li><span class="dropdown-item-text text-muted">لا توجد تنبيهات، المخزون في حالة جيدة.</span></li>
+        }
+        else
+        {
+            <li>
+                <span class="dropdown-item-text small text-muted">
+                    @Model.OutOfStockCount نفد من المخزون، @Model.LowStockCount مخزون منخفض
+                </span>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            @foreach (var item in Model.Items)
+            {
+                <li>
+                    <a class="dropdown-item d-flex justify-content-between align-items-center gap-2" asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductId">
+                        <span class="text-truncate">@item.Name</span>
+                        @if (item.IsOutOfStock)
+                        {
+                            <span class="badge text-bg-danger">نفد</span>
+                        }
+                        else
+                        {
+                            <span class="badge text-bg-warning">متبقي @item.StockQuantity</span>
+                        }
+                    </a>
+                </li>
+            }
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+                <a class="dropdown-item text-center" asp-controller="Products" asp-action="Index" asp-route-onlyLowStock="true">
+                    عرض كل المنتجات المتأثرة
+                </a>
+            </li>
+        }
+    </ul>
+</li>

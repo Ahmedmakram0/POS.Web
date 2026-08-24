@@ -1,0 +1,117 @@
+@model List<Product>
+@{
+    ViewData["Title"] = "المنتجات";
+    var categories = (List<Category>)ViewData["Categories"]!;
+    var stores = (List<Store>)ViewData["Stores"]!;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>المنتجات</h2>
+    <div>
+        <a class="btn btn-outline-secondary" asp-controller="Categories" asp-action="Index">الفئات</a>
+        <a class="btn btn-outline-secondary" asp-controller="Stores" asp-action="Index">الفروع</a>
+        <a class="btn btn-primary" asp-action="Create">إضافة منتج</a>
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <input type="text" name="search" value="@ViewData["Search"]" class="form-control" placeholder="بحث بالاسم أو الباركود..." />
+    </div>
+    <div class="col-md-2">
+        <select name="categoryId" class="form-select">
+            <option value="">كل الفئات</option>
+            @foreach (var c in categories)
+            {
+                <option value="@c.Id" selected="@(((int?)ViewData["CategoryId"]) == c.Id)">@c.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="storeId" class="form-select">
+            <option value="">كل الفروع</option>
+            @foreach (var s in stores)
+            {
+                <option value="@s.Id" selected="@(((int?)ViewData["StoreId"]) == s.Id)">@s.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2 form-check d-flex align-items-center">
+        <input type="checkbox" name="onlyLowStock" value="true" class="form-check-input me-2" id="onlyLowStock" checked="@((bool)ViewData["OnlyLowStock"]!)" />
+        <label class="form-check-label" for="onlyLowStock">مخزون منخفض فقط</label>
+    </div>
+    <div class="col-md-2 form-check d-flex align-items-center">
+        <input type="checkbox" name="includeInactive" value="true" class="form-check-input me-2" id="includeInactive" checked="@((bool)ViewData["IncludeInactive"]!)" />
+        <label class="form-check-label" for="includeInactive">شامل غير النشط</label>
+    </div>
+    <div class="col-md-1">
+        <button type="submit" class="btn btn-outline-primary w-100">بحث</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th></th>
+            <th>الباركود</th>
+            <th>الاسم</th>
+            <th>الفئة</th>
+            <th>الفرع / الموقع</th>
+            <th>سعر البيع</th>
+            <th>المخزون</th>
+            <th>الحالة</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model)
+        {
+            <tr class="@(product.StockQuantity <= product.MinimumStockLevel ? "table-warning" : "")">
+                <td>
+                    @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                    {
+                        <img src="@product.ImageUrl" alt="@product.Name" style="width:40px;height:40px;object-fit:cover;" class="rounded border" />
+                    }
+                    else
+                    {
+                        <div class="bg-light border rounded d-flex align-items-center justify-content-center text-muted" style="width:40px;height:40px;font-size:0.7rem;">لا صورة</div>
+                    }
+                </td>
+                <td>@product.Barcode</td>
+                <td><a asp-action="Details" asp-route-id="@product.Id">@product.Name</a></td>
+                <td>@product.Category?.Name</td>
+                <td>
+                    @product.Store?.Name
+                    @if (!string.IsNullOrWhiteSpace(product.Location))
+                    {
+                        <div class="text-muted small">@product.Location</div>
+                    }
+                </td>
+                <td>@product.SellingPrice.ToString("N2")</td>
+                <td>@product.StockQuantity</td>
+                <td>
+                    @if (product.Status == EntityStatus.Active)
+                    {
+                        <span class="badge text-bg-success">نشط</span>
+                    }
+                    else
+                    {
+                        <span class="badge text-bg-secondary">غير نشط</span>
+                    }
+                </td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@product.Id">تعديل</a>
+                    <a class="btn btn-sm btn-outline-info" asp-action="AdjustStock" asp-route-id="@product.Id">تعديل المخزون</a>
+                    <form asp-action="ToggleStatus" asp-route-id="@product.Id" method="post" class="d-inline">
+                        <input type="hidden" name="currentStatus" value="@product.Status" />
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                            @(product.Status == EntityStatus.Active ? "تعطيل" : "تفعيل")
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>

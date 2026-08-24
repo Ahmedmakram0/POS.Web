@@ -1,0 +1,86 @@
+@model Sale
+@{
+    ViewData["Title"] = Model.InvoiceNumber;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>فاتورة @Model.InvoiceNumber</h2>
+    <div>
+        <a class="btn btn-outline-dark" asp-action="Receipt" asp-route-id="@Model.Id" target="_blank">طباعة الفاتورة</a>
+        @if (Model.Status == SaleStatus.Completed)
+        {
+            <a class="btn btn-outline-danger" asp-action="Void" asp-route-id="@Model.Id">إلغاء الفاتورة</a>
+        }
+        <a class="btn btn-outline-secondary" asp-action="Index">رجوع</a>
+    </div>
+</div>
+
+@if (Model.Status == SaleStatus.Voided)
+{
+    <div class="alert alert-secondary">
+        تم إلغاء هذه الفاتورة بتاريخ @Model.VoidedAt?.ToLocalTime().ToString("g") — السبب: @Model.VoidReason
+    </div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card h-100"><div class="card-body"><div class="text-muted small">العميل</div><div class="fs-5">@(Model.Customer?.Name ?? "عميل نقدي")</div></div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100"><div class="card-body"><div class="text-muted small">الإجمالي</div><div class="fs-5">@Model.Total.ToString("N2")</div></div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100"><div class="card-body"><div class="text-muted small">الخصم</div><div class="fs-5">@Model.TotalDiscount.ToString("N2")</div></div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100"><div class="card-body"><div class="text-muted small">الباقي المرتجع</div><div class="fs-5">@Model.ChangeGiven.ToString("N2")</div></div></div>
+    </div>
+</div>
+
+<h5 class="mb-3">الأصناف</h5>
+<div class="table-responsive">
+<table class="table table-striped mb-4">
+    <thead><tr><th>المنتج</th><th>الكمية</th><th>السعر الأصلي</th><th>السعر بعد الخصم</th><th>الإجمالي</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr class="@(item.MinimumPriceOverridden ? "table-danger" : "")">
+                <td>@item.ProductNameSnapshot</td>
+                <td>@item.Quantity</td>
+                <td>@item.OriginalUnitPrice.ToString("N2")</td>
+                <td>@item.FinalUnitPrice.ToString("N2")</td>
+                <td>@item.LineTotal.ToString("N2")</td>
+                <td>
+                    @if (item.MinimumPriceOverridden)
+                    {
+                        <span class="badge text-bg-danger" title="بيع بسعر أقل من الحد الأدنى (@item.MinimumSellingPriceSnapshot.ToString("N2"))">أقل من الحد الأدنى</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>
+
+<h5 class="mb-3">الدفعات</h5>
+<div class="table-responsive">
+<table class="table table-striped">
+    <thead><tr><th>الطريقة</th><th>المبلغ</th></tr></thead>
+    <tbody>
+        @foreach (var payment in Model.Payments)
+        {
+            <tr>
+                <td>@payment.Method</td>
+                <td>@payment.Amount.ToString("N2")</td>
+            </tr>
+        }
+        @if (Model.CreditAmount > 0)
+        {
+            <tr>
+                <td>آجل (على حساب العميل)</td>
+                <td>@Model.CreditAmount.ToString("N2")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>

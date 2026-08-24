@@ -1,0 +1,302 @@
+@model POS.Web.ViewModels.PurchaseInvoiceFormViewModel
+@{
+    ViewData["Title"] = "فاتورة شراء جديدة";
+}
+
+<h2 class="mb-4">فاتورة شراء جديدة</h2>
+
+@Html.AntiForgeryToken()
+
+<form asp-action="Create" method="post" id="purchaseForm">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <label class="form-label">المورد</label>
+            <select name="SupplierId" id="supplierSelect" class="form-select" required>
+                <option value="">اختر المورد</option>
+                @foreach (var s in Model.Suppliers)
+                {
+                    <option value="@s.Id" selected="@(s.Id == Model.SupplierId)">@s.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">رقم فاتورة المورد (اختياري)</label>
+            <input type="text" name="SupplierInvoiceReference" class="form-control" value="@Model.SupplierInvoiceReference" />
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center">
+        <h5>الأصناف</h5>
+        <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#quickAddModal">
+            <i class="bi bi-plus-circle"></i> منتج جديد
+        </button>
+    </div>
+    <div class="table-responsive">
+<table class="table align-middle" id="itemsTable">
+        <thead>
+            <tr>
+                <th style="min-width:260px">الباركود / كود المنتج</th>
+                <th>الكمية</th>
+                <th>سعر التكلفة</th>
+                <th>الإجمالي</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+    <button type="button" class="btn btn-outline-secondary btn-sm mb-3" id="addRowBtn">+ إضافة صنف</button>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <label class="form-label">الإجمالي الكلي</label>
+            <input type="text" class="form-control" id="grandTotal" readonly value="0.00" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">المبلغ المدفوع الآن</label>
+            <input type="number" step="0.01" name="AmountPaidNow" class="form-control" id="amountPaidNow" value="0" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">طريقة الدفع</label>
+            <select name="PaymentMethod" class="form-select">
+                <option value="">-</option>
+                <option value="Cash">نقدي</option>
+                <option value="InstaPay">إنستاباي</option>
+                <option value="VodafoneCash">فودافون كاش</option>
+            </select>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">حفظ الفاتورة</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+</form>
+
+<!-- Quick-add product modal: full product registration (incl. store) without leaving the invoice. -->
+<div class="modal fade" id="quickAddModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة منتج جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="quickAddError" class="alert alert-danger d-none"></div>
+                <div class="mb-2">
+                    <label class="form-label">الباركود</label>
+                    <div class="input-group">
+                        <input type="text" id="qaBarcode" class="form-control" />
+                        <button type="button" class="btn btn-outline-secondary" id="qaGenerateBarcode">
+                            <i class="bi bi-upc-scan"></i> توليد
+                        </button>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">رمز الصنف (SKU) - اختياري</label>
+                    <input type="text" id="qaSku" class="form-control" />
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">اسم المنتج</label>
+                    <input type="text" id="qaName" class="form-control" />
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label">الفئة</label>
+                        <select id="qaCategory" class="form-select">
+                            @foreach (var c in Model.Categories)
+                            {
+                                <option value="@c.Id">@c.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">الفرع</label>
+                        <select id="qaStore" class="form-select">
+                            <option value="">بدون تحديد فرع</option>
+                            @foreach (var s in Model.Stores)
+                            {
+                                <option value="@s.Id">@s.Name</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-2 mt-2">
+                    <label class="form-label">الموقع داخل الفرع - اختياري</label>
+                    <input type="text" id="qaLocation" class="form-control" placeholder="مثال: ممر 3 - رف ب" />
+                </div>
+                <div class="row g-2 mt-0">
+                    <div class="col-4">
+                        <label class="form-label">سعر التكلفة</label>
+                        <input type="number" step="0.01" id="qaCostPrice" class="form-control" value="0" />
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label">سعر البيع</label>
+                        <input type="number" step="0.01" id="qaSellingPrice" class="form-control" value="0" />
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label">الحد الأدنى للبيع</label>
+                        <input type="number" step="0.01" id="qaMinPrice" class="form-control" value="0" />
+                    </div>
+                </div>
+                <div class="mb-2 mt-2">
+                    <label class="form-label">الحد الأدنى للمخزون</label>
+                    <input type="number" id="qaMinStock" class="form-control" value="0" />
+                </div>
+                <div class="form-text">سيتم تسجيل المورد الحالي كمورد افتراضي لهذا المنتج.</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-success" id="qaSaveBtn">إضافة إلى الفاتورة</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const antiforgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
+    const tbody = document.querySelector('#itemsTable tbody');
+    const supplierSelect = document.getElementById('supplierSelect');
+    let rowIndex = 0;
+
+    // Whether the product was just created or already existed, offer a one-click barcode print.
+    function resolvedNameHtml(product) {
+        return `<i class="bi bi-check-circle"></i> ${product.name}
+            <a href="/Products/PrintLabels/${product.id}" target="_blank" class="ms-1" title="طباعة ملصق الباركود">
+                <i class="bi bi-printer"></i>
+            </a>`;
+    }
+
+    function addRow(product) {
+        const i = rowIndex++;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <input type="text" class="form-control code-input" placeholder="امسح الباركود أو أدخل كود المنتج" value="${product?.barcode ?? ''}" />
+                <div class="small mt-1 product-name-display ${product ? 'text-success' : 'text-muted'}">${product ? resolvedNameHtml(product) : 'لم يتم تحديد منتج بعد'}</div>
+                <input type="hidden" name="Items[${i}].ProductId" class="product-id-hidden" value="${product?.id ?? ''}" />
+            </td>
+            <td><input type="number" name="Items[${i}].Quantity" class="form-control qty" value="1" min="1" /></td>
+            <td><input type="number" step="0.01" name="Items[${i}].UnitCostPrice" class="form-control cost" value="${product?.costPrice ?? 0}" /></td>
+            <td class="line-total align-middle">0.00</td>
+            <td><button type="button" class="btn btn-sm btn-outline-danger remove-row">حذف</button></td>
+        `;
+        tbody.appendChild(tr);
+
+        const codeInput = tr.querySelector('.code-input');
+        const nameDisplay = tr.querySelector('.product-name-display');
+        const idHidden = tr.querySelector('.product-id-hidden');
+        const costInput = tr.querySelector('.cost');
+        const qtyInput = tr.querySelector('.qty');
+
+        async function resolveCode() {
+            const code = codeInput.value.trim();
+            if (!code) {
+                idHidden.value = '';
+                nameDisplay.className = 'small mt-1 product-name-display text-muted';
+                nameDisplay.textContent = 'لم يتم تحديد منتج بعد';
+                return;
+            }
+            const res = await fetch(`/Products/LookupProduct?code=${encodeURIComponent(code)}`);
+            if (!res.ok) {
+                idHidden.value = '';
+                nameDisplay.className = 'small mt-1 product-name-display text-danger';
+                nameDisplay.innerHTML = '<i class="bi bi-x-circle"></i> لم يتم العثور على منتج بهذا الكود';
+                return;
+            }
+            const found = await res.json();
+            idHidden.value = found.id;
+            codeInput.value = found.barcode;
+            costInput.value = found.costPrice;
+            nameDisplay.className = 'small mt-1 product-name-display text-success';
+            nameDisplay.innerHTML = resolvedNameHtml(found);
+            recalc();
+        }
+
+        codeInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); resolveCode(); }
+        });
+        codeInput.addEventListener('blur', resolveCode);
+        costInput.addEventListener('input', recalc);
+        qtyInput.addEventListener('input', recalc);
+        tr.querySelector('.remove-row').addEventListener('click', () => { tr.remove(); recalc(); });
+
+        recalc();
+        return tr;
+    }
+
+    function recalc() {
+        let grand = 0;
+        tbody.querySelectorAll('tr').forEach(tr => {
+            const qty = parseFloat(tr.querySelector('.qty').value) || 0;
+            const cost = parseFloat(tr.querySelector('.cost').value) || 0;
+            const lineTotal = qty * cost;
+            tr.querySelector('.line-total').textContent = lineTotal.toFixed(2);
+            grand += lineTotal;
+        });
+        document.getElementById('grandTotal').value = grand.toFixed(2);
+    }
+
+    document.getElementById('addRowBtn').addEventListener('click', () => addRow());
+    addRow();
+
+    document.getElementById('qaGenerateBarcode').addEventListener('click', async () => {
+        const res = await fetch('/Products/GenerateBarcode');
+        const data = await res.json();
+        document.getElementById('qaBarcode').value = data.barcode;
+    });
+
+    document.getElementById('qaSaveBtn').addEventListener('click', async () => {
+        const errorBox = document.getElementById('quickAddError');
+        errorBox.classList.add('d-none');
+
+        const payload = {
+            barcode: document.getElementById('qaBarcode').value.trim(),
+            sku: document.getElementById('qaSku').value.trim() || null,
+            name: document.getElementById('qaName').value.trim(),
+            categoryId: parseInt(document.getElementById('qaCategory').value),
+            storeId: document.getElementById('qaStore').value ? parseInt(document.getElementById('qaStore').value) : null,
+            location: document.getElementById('qaLocation').value.trim() || null,
+            costPrice: parseFloat(document.getElementById('qaCostPrice').value) || 0,
+            sellingPrice: parseFloat(document.getElementById('qaSellingPrice').value) || 0,
+            minimumSellingPrice: parseFloat(document.getElementById('qaMinPrice').value) || 0,
+            minimumStockLevel: parseInt(document.getElementById('qaMinStock').value) || 0,
+            supplierId: supplierSelect.value ? parseInt(supplierSelect.value) : null,
+        };
+
+        if (!payload.barcode || !payload.name || !payload.categoryId) {
+            errorBox.textContent = 'الباركود والاسم والفئة مطلوبة.';
+            errorBox.classList.remove('d-none');
+            return;
+        }
+
+        const res = await fetch('/Products/QuickCreate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': antiforgeryToken },
+            body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({ message: 'حدث خطأ غير متوقع.' }));
+            errorBox.textContent = data.message || 'حدث خطأ غير متوقع.';
+            errorBox.classList.remove('d-none');
+            return;
+        }
+
+        const product = await res.json();
+        addRow(product);
+
+        bootstrap.Modal.getInstance(document.getElementById('quickAddModal')).hide();
+        document.getElementById('qaBarcode').value = '';
+        document.getElementById('qaSku').value = '';
+        document.getElementById('qaName').value = '';
+        document.getElementById('qaStore').value = '';
+        document.getElementById('qaLocation').value = '';
+        document.getElementById('qaCostPrice').value = '0';
+        document.getElementById('qaSellingPrice').value = '0';
+        document.getElementById('qaMinPrice').value = '0';
+        document.getElementById('qaMinStock').value = '0';
+    });
+</script>
+}

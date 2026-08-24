@@ -1,0 +1,120 @@
+@model Product
+@{
+    ViewData["Title"] = "طباعة ملصقات";
+    var copies = (int)ViewData["Copies"]!;
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <title>طباعة ملصقات - @Model.Name</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <style>
+        /* Label stock is 25mm (width) x 38mm (height); one label per physical page when printing. */
+        @@page {
+            size: 25mm 38mm;
+            margin: 0;
+        }
+
+        body { font-family: Tahoma, Arial, sans-serif; margin: 0; background: #f2f2f2; }
+        .toolbar { padding: 12px 16px; background: #fff; border-bottom: 1px solid #ddd; }
+        .toolbar input { width: 70px; }
+
+        .labels { display: flex; flex-wrap: wrap; gap: 10px; padding: 16px; }
+
+        .label {
+            width: 25mm;
+            height: 38mm;
+            box-sizing: border-box;
+            padding: 1mm;
+            border: 1px dashed #999;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .label .name {
+            font-size: 2.3mm;
+            line-height: 1.15;
+            font-weight: bold;
+            max-height: 7mm;
+            overflow: hidden;
+            word-break: break-word;
+        }
+
+        .label .barcode-wrap {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin: 0.5mm 0;
+        }
+
+        .label .price {
+            font-size: 2.6mm;
+            font-weight: bold;
+        }
+
+        @@media print {
+            body { background: #fff; }
+            .toolbar { display: none; }
+            .label {
+                border: none;
+                page-break-after: always;
+                margin: 0;
+            }
+            .label:last-child { page-break-after: auto; }
+            .labels { padding: 0; gap: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <form method="get">
+            <label>عدد الملصقات: <input type="number" name="copies" value="@copies" min="1" max="100" /></label>
+            <button type="submit">تحديث</button>
+            <button type="button" onclick="window.print()">طباعة</button>
+            <span style="color:#666; margin-inline-start:8px;">مقاس الملصق: 25×38 مم</span>
+        </form>
+    </div>
+
+    <div class="labels">
+        @for (var i = 0; i < copies; i++)
+        {
+            <div class="label">
+                <div class="name">@Model.Name</div>
+                <div class="barcode-wrap"><svg class="barcode"></svg></div>
+                <div class="price">@Model.SellingPrice.ToString("N2")</div>
+            </div>
+        }
+    </div>
+
+    <script>
+        // Barcode area must fit inside the 25mm-wide label with room for the name/price text.
+        const barcodeWidthMm = 21;
+
+        document.querySelectorAll('.barcode').forEach(el => {
+            JsBarcode(el, '@Model.Barcode', {
+                format: 'CODE128', width: 1.5, height: 40, displayValue: true, fontSize: 11, margin: 2,
+            });
+
+            // JsBarcode has no viewBox by default, so a CSS width alone would crop rather than scale.
+            // Add one from its own rendered pixel size, then let CSS mm dimensions scale it proportionally.
+            const originalWidth = parseFloat(el.getAttribute('width'));
+            const originalHeight = parseFloat(el.getAttribute('height'));
+            el.setAttribute('viewBox', `0 0 ${originalWidth} ${originalHeight}`);
+            el.removeAttribute('width');
+            el.removeAttribute('height');
+
+            const heightMm = barcodeWidthMm * (originalHeight / originalWidth);
+            el.style.width = barcodeWidthMm + 'mm';
+            el.style.height = heightMm + 'mm';
+        });
+    </script>
+</body>
+</html>
