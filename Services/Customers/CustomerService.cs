@@ -2,66 +2,41 @@ using Microsoft.EntityFrameworkCore;
 using POS.Web.Data;
 using POS.Web.Models.Entities;
 using POS.Web.Models.Enums;
+using POS.Web.Services.Common;
 using POS.Web.Services.Financial;
 
 namespace POS.Web.Services.Customers;
 
-public class CustomerService(ApplicationDbContext db, IFinancialAccountService financial) : ICustomerService
+public class CustomerService(ApplicationDbContext db, IFinancialAccountService financial)
+    : NamedEntityServiceBase<Customer>(db), ICustomerService
 {
-    public async Task<List<Customer>> GetAllAsync(bool includeInactive = false, string? search = null)
+    protected override DbSet<Customer> Set => Db.Customers;
+
+    protected override IQueryable<Customer> ApplySearch(IQueryable<Customer> query, string term) =>
+        query.Where(c => c.Name.Contains(term) || (c.Phone != null && c.Phone.Contains(term)));
+
+    public async Task<Customer> CreateAsync(CreateCustomerRequest request)
     {
-        var query = db.Customers.AsQueryable();
-
-        if (!includeInactive)
-        {
-            query = query.Where(c => c.Status == EntityStatus.Active);
-        }
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var term = search.Trim();
-            query = query.Where(c => c.Name.Contains(term) || (c.Phone != null && c.Phone.Contains(term)));
-        }
-
-        return await query.OrderBy(c => c.Name).ToListAsync();
-    }
-
-    public Task<Customer?> GetByIdAsync(int id) =>
-        db.Customers.FirstOrDefaultAsync(c => c.Id == id);
-
-    public async Task<Customer> CreateAsync(string name, string? phone, string? address, string? notes)
-    {
-        var customer = new Customer { Name = name, Phone = phone, Address = address, Notes = notes };
-        db.Customers.Add(customer);
-        await db.SaveChangesAsync();
+        var customer = new Customer { Name = request.Name, Phone = request.Phone, Address = request.Address, Notes = request.Notes };
+        Db.Customers.Add(customer);
+        await Db.SaveChangesAsync();
         return customer;
     }
 
-    public async Task<Customer> UpdateAsync(int id, string name, string? phone, string? address, string? notes)
+    public async Task<Customer> UpdateAsync(int id, UpdateCustomerRequest request)
     {
-        var customer = await db.Customers.FirstOrDefaultAsync(c => c.Id == id)
-            ?? throw new KeyNotFoundException($"Customer {id} not found.");
-
-        customer.Name = name;
-        customer.Phone = phone;
-        customer.Address = address;
-        customer.Notes = notes;
-        await db.SaveChangesAsync();
+        var customer = await GetRequiredAsync(id);
+        customer.Name = request.Name;
+        customer.Phone = request.Phone;
+        customer.Address = request.Address;
+        customer.Notes = request.Notes;
+        await Db.SaveChangesAsync();
         return customer;
-    }
-
-    public async Task SetStatusAsync(int id, EntityStatus status)
-    {
-        var customer = await db.Customers.FirstOrDefaultAsync(c => c.Id == id)
-            ?? throw new KeyNotFoundException($"Customer {id} not found.");
-
-        customer.Status = status;
-        await db.SaveChangesAsync();
     }
 
     public async Task<decimal> GetBalanceAsync(int customerId)
     {
-        var last = await db.CustomerCreditTransactions
+        var last = await Db.CustomerCreditTransactions
             .Where(t => t.CustomerId == customerId)
             .OrderByDescending(t => t.CreatedAt)
             .ThenByDescending(t => t.Id)
@@ -71,7 +46,7 @@ public class CustomerService(ApplicationDbContext db, IFinancialAccountService f
     }
 
     public Task<List<CustomerCreditTransaction>> GetCreditHistoryAsync(int customerId) =>
-        db.CustomerCreditTransactions
+        Db.CustomerCreditTransactions
             .Where(t => t.CustomerId == customerId)
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
@@ -86,14 +61,14 @@ public class CustomerService(ApplicationDbContext db, IFinancialAccountService f
         {
             throw new ArgumentException("Credit is not a valid settlement method for a credit payment.", nameof(method));
         }
-        if (!await db.Customers.AnyAsync(c => c.Id == customerId))
+        if (!await Db.Customers.AnyAsync(c => c.Id == customerId))
         {
             throw new KeyNotFoundException($"Customer {customerId} not found.");
         }
 
         var currentBalance = await GetBalanceAsync(customerId);
 
-        using var dbTransaction = await db.Database.BeginTransactionAsync();
+        using var dbTransaction = await Db.Database.BeginTransactionAsync();
 
         var creditTransaction = new CustomerCreditTransaction
         {
@@ -104,8 +79,8 @@ public class CustomerService(ApplicationDbContext db, IFinancialAccountService f
             PaymentMethod = method,
             RecordedByUserId = recordedByUserId,
         };
-        db.CustomerCreditTransactions.Add(creditTransaction);
-        await db.SaveChangesAsync();
+        Db.CustomerCreditTransactions.Add(creditTransaction);
+        await Db.SaveChangesAsync();
 
         var reference = $"CustomerPayment#{creditTransaction.Id}";
         var transactionType = method == PaymentMethod.Cash

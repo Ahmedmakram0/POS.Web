@@ -43,7 +43,7 @@ public class CustomersController(ICustomerService customerService) : Controller
             return View(model);
         }
 
-        var customer = await customerService.CreateAsync(model.Name, model.Phone, model.Address, model.Notes);
+        var customer = await customerService.CreateAsync(new CreateCustomerRequest(model.Name, model.Phone, model.Address, model.Notes));
         TempData["Success"] = "تم إضافة العميل بنجاح.";
         return RedirectToAction(nameof(Details), new { id = customer.Id });
     }
@@ -72,7 +72,7 @@ public class CustomersController(ICustomerService customerService) : Controller
             return View(model);
         }
 
-        await customerService.UpdateAsync(id, model.Name, model.Phone, model.Address, model.Notes);
+        await customerService.UpdateAsync(id, new UpdateCustomerRequest(model.Name, model.Phone, model.Address, model.Notes));
         TempData["Success"] = "تم تحديث بيانات العميل.";
         return RedirectToAction(nameof(Details), new { id });
     }

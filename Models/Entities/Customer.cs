@@ -2,7 +2,7 @@ using POS.Web.Models.Enums;
 
 namespace POS.Web.Models.Entities;
 
-public class Customer
+public class Customer : INamedEntity
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

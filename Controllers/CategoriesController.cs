@@ -27,7 +27,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
             return View(model);
         }
 
-        await categoryService.CreateAsync(model.Name);
+        await categoryService.CreateAsync(new CreateCategoryRequest(model.Name));
         TempData["Success"] = "تم إضافة الفئة بنجاح.";
         return RedirectToAction(nameof(Index));
     }
@@ -53,7 +53,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
             return View(model);
         }
 
-        await categoryService.UpdateAsync(id, model.Name);
+        await categoryService.UpdateAsync(id, new UpdateCategoryRequest(model.Name));
         TempData["Success"] = "تم تحديث الفئة بنجاح.";
         return RedirectToAction(nameof(Index));
     }

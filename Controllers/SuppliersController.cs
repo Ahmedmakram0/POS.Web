@@ -41,7 +41,7 @@ public class SuppliersController(ISupplierService supplierService, IPurchaseInvo
             return View(model);
         }
 
-        var supplier = await supplierService.CreateAsync(model.Name, model.Phone, model.Email, model.Address, model.Notes);
+        var supplier = await supplierService.CreateAsync(new CreateSupplierRequest(model.Name, model.Phone, model.Email, model.Address, model.Notes));
         TempData["Success"] = "تم إضافة المورد بنجاح.";
         return RedirectToAction(nameof(Details), new { id = supplier.Id });
     }
@@ -71,7 +71,7 @@ public class SuppliersController(ISupplierService supplierService, IPurchaseInvo
             return View(model);
         }
 
-        await supplierService.UpdateAsync(id, model.Name, model.Phone, model.Email, model.Address, model.Notes);
+        await supplierService.UpdateAsync(id, new UpdateSupplierRequest(model.Name, model.Phone, model.Email, model.Address, model.Notes));
         TempData["Success"] = "تم تحديث بيانات المورد.";
         return RedirectToAction(nameof(Details), new { id });
     }

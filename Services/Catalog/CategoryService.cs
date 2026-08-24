@@ -1,50 +1,27 @@
 using Microsoft.EntityFrameworkCore;
 using POS.Web.Data;
 using POS.Web.Models.Entities;
-using POS.Web.Models.Enums;
+using POS.Web.Services.Common;
 
 namespace POS.Web.Services.Catalog;
 
-public class CategoryService(ApplicationDbContext db) : ICategoryService
+public class CategoryService(ApplicationDbContext db) : NamedEntityServiceBase<Category>(db), ICategoryService
 {
-    public async Task<List<Category>> GetAllAsync(bool includeInactive = false)
+    protected override DbSet<Category> Set => Db.Categories;
+
+    public async Task<Category> CreateAsync(CreateCategoryRequest request)
     {
-        var query = db.Categories.AsQueryable();
-        if (!includeInactive)
-        {
-            query = query.Where(c => c.Status == EntityStatus.Active);
-        }
-
-        return await query.OrderBy(c => c.Name).ToListAsync();
-    }
-
-    public Task<Category?> GetByIdAsync(int id) =>
-        db.Categories.FirstOrDefaultAsync(c => c.Id == id);
-
-    public async Task<Category> CreateAsync(string name)
-    {
-        var category = new Category { Name = name };
-        db.Categories.Add(category);
-        await db.SaveChangesAsync();
+        var category = new Category { Name = request.Name };
+        Db.Categories.Add(category);
+        await Db.SaveChangesAsync();
         return category;
     }
 
-    public async Task<Category> UpdateAsync(int id, string name)
+    public async Task<Category> UpdateAsync(int id, UpdateCategoryRequest request)
     {
-        var category = await db.Categories.FirstOrDefaultAsync(c => c.Id == id)
-            ?? throw new KeyNotFoundException($"Category {id} not found.");
-
-        category.Name = name;
-        await db.SaveChangesAsync();
+        var category = await GetRequiredAsync(id);
+        category.Name = request.Name;
+        await Db.SaveChangesAsync();
         return category;
-    }
-
-    public async Task SetStatusAsync(int id, EntityStatus status)
-    {
-        var category = await db.Categories.FirstOrDefaultAsync(c => c.Id == id)
-            ?? throw new KeyNotFoundException($"Category {id} not found.");
-
-        category.Status = status;
-        await db.SaveChangesAsync();
     }
 }

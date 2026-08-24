@@ -3,12 +3,15 @@ using POS.Web.Models.Enums;
 
 namespace POS.Web.Services.Customers;
 
+public record CreateCustomerRequest(string Name, string? Phone, string? Address, string? Notes);
+public record UpdateCustomerRequest(string Name, string? Phone, string? Address, string? Notes);
+
 public interface ICustomerService
 {
     Task<List<Customer>> GetAllAsync(bool includeInactive = false, string? search = null);
     Task<Customer?> GetByIdAsync(int id);
-    Task<Customer> CreateAsync(string name, string? phone, string? address, string? notes);
-    Task<Customer> UpdateAsync(int id, string name, string? phone, string? address, string? notes);
+    Task<Customer> CreateAsync(CreateCustomerRequest request);
+    Task<Customer> UpdateAsync(int id, UpdateCustomerRequest request);
     Task SetStatusAsync(int id, EntityStatus status);
 
     Task<decimal> GetBalanceAsync(int customerId);

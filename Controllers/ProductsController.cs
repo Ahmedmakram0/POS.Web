@@ -44,12 +44,8 @@ public class ProductsController(
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        var model = new ProductFormViewModel
-        {
-            Categories = await categoryService.GetAllAsync(),
-            Suppliers = await GetSuppliersAsync(),
-            Stores = await GetStoresAsync(),
-        };
+        var model = new ProductFormViewModel();
+        await PopulateFormLookupsAsync(model);
         return View(model);
     }
 
@@ -59,9 +55,7 @@ public class ProductsController(
     {
         if (!ModelState.IsValid)
         {
-            model.Categories = await categoryService.GetAllAsync();
-            model.Suppliers = await GetSuppliersAsync();
-            model.Stores = await GetStoresAsync();
+            await PopulateFormLookupsAsync(model);
             return View(model);
         }
 
@@ -89,9 +83,7 @@ public class ProductsController(
         catch (InvalidOperationException ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
-            model.Categories = await categoryService.GetAllAsync();
-            model.Suppliers = await GetSuppliersAsync();
-            model.Stores = await GetStoresAsync();
+            await PopulateFormLookupsAsync(model);
             return View(model);
         }
     }
@@ -120,10 +112,8 @@ public class ProductsController(
             MinimumSellingPrice = product.MinimumSellingPrice,
             MinimumStockLevel = product.MinimumStockLevel,
             ImageUrl = product.ImageUrl,
-            Categories = await categoryService.GetAllAsync(),
-            Suppliers = await GetSuppliersAsync(),
-            Stores = await GetStoresAsync(),
         };
+        await PopulateFormLookupsAsync(model);
         return View(model);
     }
 
@@ -133,9 +123,7 @@ public class ProductsController(
     {
         if (!ModelState.IsValid)
         {
-            model.Categories = await categoryService.GetAllAsync();
-            model.Suppliers = await GetSuppliersAsync();
-            model.Stores = await GetStoresAsync();
+            await PopulateFormLookupsAsync(model);
             return View(model);
         }
 
@@ -165,9 +153,7 @@ public class ProductsController(
         catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
-            model.Categories = await categoryService.GetAllAsync();
-            model.Suppliers = await GetSuppliersAsync();
-            model.Stores = await GetStoresAsync();
+            await PopulateFormLookupsAsync(model);
             return View(model);
         }
     }
@@ -323,8 +309,12 @@ public class ProductsController(
         }
     }
 
-    private Task<List<Models.Entities.Supplier>> GetSuppliersAsync() => supplierService.GetAllAsync();
-    private Task<List<Models.Entities.Store>> GetStoresAsync() => storeService.GetAllAsync();
+    private async Task PopulateFormLookupsAsync(ProductFormViewModel model)
+    {
+        model.Categories = await categoryService.GetAllAsync();
+        model.Suppliers = await supplierService.GetAllAsync();
+        model.Stores = await storeService.GetAllAsync();
+    }
 }
 
 public record QuickCreateProductRequest(

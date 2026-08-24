@@ -27,11 +27,9 @@ public class PurchasesController(
         var model = new PurchaseInvoiceFormViewModel
         {
             SupplierId = supplierId ?? 0,
-            Suppliers = await supplierService.GetAllAsync(),
-            Categories = await categoryService.GetAllAsync(),
-            Stores = await storeService.GetAllAsync(),
             Items = new List<PurchaseInvoiceItemFormViewModel> { new() },
         };
+        await PopulateFormLookupsAsync(model);
         return View(model);
     }
 
@@ -47,9 +45,7 @@ public class PurchasesController(
 
         if (!ModelState.IsValid)
         {
-            model.Suppliers = await supplierService.GetAllAsync();
-            model.Categories = await categoryService.GetAllAsync();
-            model.Stores = await storeService.GetAllAsync();
+            await PopulateFormLookupsAsync(model);
             if (model.Items.Count == 0)
             {
                 model.Items.Add(new PurchaseInvoiceItemFormViewModel());
@@ -73,9 +69,7 @@ public class PurchasesController(
         catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException or ArgumentException)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
-            model.Suppliers = await supplierService.GetAllAsync();
-            model.Categories = await categoryService.GetAllAsync();
-            model.Stores = await storeService.GetAllAsync();
+            await PopulateFormLookupsAsync(model);
             return View(model);
         }
     }
@@ -115,5 +109,12 @@ public class PurchasesController(
             ModelState.AddModelError(string.Empty, ex.Message);
             return View(model);
         }
+    }
+
+    private async Task PopulateFormLookupsAsync(PurchaseInvoiceFormViewModel model)
+    {
+        model.Suppliers = await supplierService.GetAllAsync();
+        model.Categories = await categoryService.GetAllAsync();
+        model.Stores = await storeService.GetAllAsync();
     }
 }

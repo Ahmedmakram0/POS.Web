@@ -27,7 +27,7 @@ public class StoresController(IStoreService storeService) : Controller
             return View(model);
         }
 
-        await storeService.CreateAsync(model.Name, model.Address, model.Phone);
+        await storeService.CreateAsync(new CreateStoreRequest(model.Name, model.Address, model.Phone));
         TempData["Success"] = "تم إضافة الفرع بنجاح.";
         return RedirectToAction(nameof(Index));
     }
@@ -53,7 +53,7 @@ public class StoresController(IStoreService storeService) : Controller
             return View(model);
         }
 
-        await storeService.UpdateAsync(id, model.Name, model.Address, model.Phone);
+        await storeService.UpdateAsync(id, new UpdateStoreRequest(model.Name, model.Address, model.Phone));
         TempData["Success"] = "تم تحديث بيانات الفرع.";
         return RedirectToAction(nameof(Index));
     }
