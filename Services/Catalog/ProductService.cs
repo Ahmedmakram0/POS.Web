@@ -9,9 +9,24 @@ public class ProductService(ApplicationDbContext db) : IProductService
 {
     public async Task<List<Product>> GetAllAsync(ProductFilter? filter = null)
     {
-        filter ??= new ProductFilter();
+        var query = ApplyFilter(db.Products.Include(p => p.Category).Include(p => p.Supplier).Include(p => p.Store), filter);
+        return await query.OrderBy(p => p.Name).ToListAsync();
+    }
 
-        var query = db.Products.Include(p => p.Category).Include(p => p.Supplier).Include(p => p.Store).AsQueryable();
+    public async Task<List<ProductListItemDto>> GetAllForListAsync(ProductFilter? filter = null)
+    {
+        var query = ApplyFilter(db.Products, filter);
+        return await query
+            .OrderBy(p => p.Name)
+            .Select(p => new ProductListItemDto(
+                p.Id, p.Barcode, p.Name, p.Category!.Name, p.Store!.Name, p.Location,
+                p.SellingPrice, p.StockQuantity, p.MinimumStockLevel, p.Status, p.ImageUrl))
+            .ToListAsync();
+    }
+
+    private static IQueryable<Product> ApplyFilter(IQueryable<Product> query, ProductFilter? filter)
+    {
+        filter ??= new ProductFilter();
 
         if (!filter.IncludeInactive)
         {
@@ -42,7 +57,7 @@ public class ProductService(ApplicationDbContext db) : IProductService
             query = query.Where(p => p.StockQuantity <= p.MinimumStockLevel);
         }
 
-        return await query.OrderBy(p => p.Name).ToListAsync();
+        return query;
     }
 
     public Task<Product?> GetByIdAsync(int id) =>

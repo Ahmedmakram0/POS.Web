@@ -26,7 +26,7 @@ public class ProductsController(
         ViewData["OnlyLowStock"] = onlyLowStock;
         ViewData["Categories"] = await categoryService.GetAllAsync(includeInactive: true);
         ViewData["Stores"] = await storeService.GetAllAsync(includeInactive: true);
-        return View(await productService.GetAllAsync(filter));
+        return View(await productService.GetAllForListAsync(filter));
     }
 
     public async Task<IActionResult> Details(int id)

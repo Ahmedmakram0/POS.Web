@@ -1,4 +1,5 @@
-@model List<Product>
+@using POS.Web.Services.Catalog
+@model List<ProductListItemDto>
 @{
     ViewData["Title"] = "المنتجات";
     var categories = (List<Category>)ViewData["Categories"]!;
@@ -80,9 +81,9 @@
                 </td>
                 <td>@product.Barcode</td>
                 <td><a asp-action="Details" asp-route-id="@product.Id">@product.Name</a></td>
-                <td>@product.Category?.Name</td>
+                <td>@product.CategoryName</td>
                 <td>
-                    @product.Store?.Name
+                    @product.StoreName
                     @if (!string.IsNullOrWhiteSpace(product.Location))
                     {
                         <div class="text-muted small">@product.Location</div>

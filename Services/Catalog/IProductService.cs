@@ -21,9 +21,14 @@ public record ProductCreateRequest(
 
 public record ProductFilter(string? Search = null, int? CategoryId = null, bool IncludeInactive = false, bool OnlyLowStock = false, int? StoreId = null);
 
+public record ProductListItemDto(
+    int Id, string Barcode, string Name, string? CategoryName, string? StoreName, string? Location,
+    decimal SellingPrice, int StockQuantity, int MinimumStockLevel, EntityStatus Status, string? ImageUrl);
+
 public interface IProductService
 {
     Task<List<Product>> GetAllAsync(ProductFilter? filter = null);
+    Task<List<ProductListItemDto>> GetAllForListAsync(ProductFilter? filter = null);
     Task<Product?> GetByIdAsync(int id);
     Task<Product?> GetByBarcodeAsync(string barcode);
 
