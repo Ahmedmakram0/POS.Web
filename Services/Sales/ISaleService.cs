@@ -9,9 +9,14 @@ public record SalePaymentRequest(PaymentMethod Method, decimal Amount);
 
 public record CreateSaleRequest(int? CustomerId, List<SaleItemRequest> Items, List<SalePaymentRequest> Payments);
 
+public record SaleListItemDto(
+    int Id, string InvoiceNumber, DateTime CreatedAt, string? CustomerName,
+    decimal Total, SaleStatus Status, bool HasMinimumPriceOverride);
+
 public interface ISaleService
 {
     Task<List<Sale>> GetAllAsync(DateTime? fromUtc = null, DateTime? toUtc = null);
+    Task<List<SaleListItemDto>> GetAllForListAsync(DateTime? fromUtc = null, DateTime? toUtc = null);
     Task<Sale?> GetByIdAsync(int id);
 
     /// <summary>Prices every line, deducts stock, records payments, and posts the resulting cash/credit movements. Runs in a single transaction.</summary>

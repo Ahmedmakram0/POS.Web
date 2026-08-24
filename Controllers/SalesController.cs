@@ -21,7 +21,7 @@ public class SalesController(ISaleService saleService, ApplicationDbContext db, 
         var toUtc = to?.Date.AddDays(1).ToUniversalTime();
         ViewData["From"] = from?.ToString("yyyy-MM-dd");
         ViewData["To"] = to?.ToString("yyyy-MM-dd");
-        return View(await saleService.GetAllAsync(fromUtc, toUtc));
+        return View(await saleService.GetAllForListAsync(fromUtc, toUtc));
     }
 
     public async Task<IActionResult> Details(int id)

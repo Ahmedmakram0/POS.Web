@@ -1,4 +1,5 @@
-@model List<Sale>
+@using POS.Web.Services.Sales
+@model List<SaleListItemDto>
 @{
     ViewData["Title"] = "المبيعات";
 }
@@ -41,11 +42,11 @@
             <tr class="@(sale.Status == SaleStatus.Voided ? "table-secondary text-decoration-line-through" : "")">
                 <td>@sale.InvoiceNumber</td>
                 <td>@sale.CreatedAt.ToLocalTime().ToString("g")</td>
-                <td>@sale.Customer?.Name</td>
+                <td>@sale.CustomerName</td>
                 <td>@sale.Total.ToString("N2")</td>
                 <td>@sale.Status</td>
                 <td>
-                    @if (sale.Items.Any(i => i.MinimumPriceOverridden))
+                    @if (sale.HasMinimumPriceOverride)
                     {
                         <span class="badge text-bg-danger" title="تحتوي هذه الفاتورة على أصناف بيعت بأقل من الحد الأدنى">أقل من الحد الأدنى</span>
                     }

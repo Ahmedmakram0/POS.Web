@@ -12,7 +12,7 @@ public class SaleService(ApplicationDbContext db, IInventoryService inventory, I
 {
     public async Task<List<Sale>> GetAllAsync(DateTime? fromUtc = null, DateTime? toUtc = null)
     {
-        var query = db.Sales.Include(s => s.Customer).Include(s => s.Items).AsQueryable();
+        var query = db.Sales.Include(s => s.Customer).AsQueryable();
 
         if (fromUtc is DateTime from)
         {
@@ -24,6 +24,27 @@ public class SaleService(ApplicationDbContext db, IInventoryService inventory, I
         }
 
         return await query.OrderByDescending(s => s.CreatedAt).ToListAsync();
+    }
+
+    public async Task<List<SaleListItemDto>> GetAllForListAsync(DateTime? fromUtc = null, DateTime? toUtc = null)
+    {
+        var query = db.Sales.AsQueryable();
+
+        if (fromUtc is DateTime from)
+        {
+            query = query.Where(s => s.CreatedAt >= from);
+        }
+        if (toUtc is DateTime to)
+        {
+            query = query.Where(s => s.CreatedAt <= to);
+        }
+
+        return await query
+            .OrderByDescending(s => s.CreatedAt)
+            .Select(s => new SaleListItemDto(
+                s.Id, s.InvoiceNumber, s.CreatedAt, s.Customer!.Name,
+                s.Total, s.Status, s.Items.Any(i => i.MinimumPriceOverridden)))
+            .ToListAsync();
     }
 
     public Task<Sale?> GetByIdAsync(int id) =>
