@@ -12,7 +12,9 @@ using POS.Web.Services.Customers;
 using POS.Web.Services.Financial;
 using POS.Web.Services.Media;
 using POS.Web.Services.Purchasing;
+using POS.Web.Services.Reporting;
 using POS.Web.Services.Sales;
+using POS.Web.Services.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +55,8 @@ builder.Services.AddScoped<ISaleService, SaleService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IPurchaseInvoiceService, PurchaseInvoiceService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<ISettingsService, SettingsService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 builder.Services.AddSingleton(_ =>
 {

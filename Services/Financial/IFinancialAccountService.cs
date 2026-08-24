@@ -19,4 +19,13 @@ public interface IFinancialAccountService
         string createdByUserId,
         string? reference = null,
         string? description = null);
+
+    /// <summary>Posts an Out transaction after checking the account has sufficient balance.</summary>
+    /// <exception cref="InvalidOperationException">The account balance is lower than <paramref name="amount"/>.</exception>
+    Task<FinancialTransaction> WithdrawAsync(
+        FinancialAccountType accountType,
+        FinancialTransactionType type,
+        decimal amount,
+        string createdByUserId,
+        string? description = null);
 }

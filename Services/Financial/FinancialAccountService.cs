@@ -92,4 +92,16 @@ public class FinancialAccountService(ApplicationDbContext db) : IFinancialAccoun
         await db.SaveChangesAsync();
         return transaction;
     }
+
+    public async Task<FinancialTransaction> WithdrawAsync(
+        FinancialAccountType accountType, FinancialTransactionType type, decimal amount, string createdByUserId, string? description = null)
+    {
+        var balance = await GetBalanceAsync(accountType);
+        if (amount > balance)
+        {
+            throw new InvalidOperationException($"الرصيد الحالي ({balance:N2}) أقل من مبلغ السحب.");
+        }
+
+        return await PostAsync(accountType, type, TransactionDirection.Out, amount, createdByUserId, description: description);
+    }
 }

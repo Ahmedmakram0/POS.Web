@@ -62,17 +62,10 @@ public class SafeController(IFinancialAccountService financialAccountService) : 
             return View(model);
         }
 
-        var balance = await financialAccountService.GetBalanceAsync(model.AccountType);
-        if (model.Amount > balance)
-        {
-            ModelState.AddModelError(string.Empty, $"الرصيد الحالي ({balance:N2}) أقل من مبلغ السحب.");
-            return View(model);
-        }
-
         try
         {
-            await financialAccountService.PostAsync(
-                model.AccountType, FinancialTransactionType.ManagerWithdrawal, TransactionDirection.Out,
+            await financialAccountService.WithdrawAsync(
+                model.AccountType, FinancialTransactionType.ManagerWithdrawal,
                 model.Amount, this.GetCurrentUserId(), description: model.Description);
             TempData["Success"] = "تم تسجيل السحب بنجاح.";
             return RedirectToAction(nameof(Index));
