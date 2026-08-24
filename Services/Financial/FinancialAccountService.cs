@@ -7,7 +7,7 @@ namespace POS.Web.Services.Financial;
 
 public class FinancialAccountService(ApplicationDbContext db) : IFinancialAccountService
 {
-    private static readonly Dictionary<FinancialAccountType, string> DefaultNames = new()
+    public static readonly Dictionary<FinancialAccountType, string> DefaultNames = new()
     {
         [FinancialAccountType.CashSafe] = "الخزينة النقدية",
         [FinancialAccountType.InstaPay] = "إنستاباي",

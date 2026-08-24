@@ -1,6 +1,6 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using POS.Web.Authorization;
 using POS.Web.Services.Catalog;
 using POS.Web.Services.Customers;
 using POS.Web.Services.Sales;
@@ -10,8 +10,6 @@ namespace POS.Web.Controllers;
 [Authorize]
 public class PosController(ISaleService saleService, IProductService productService, ICustomerService customerService) : Controller
 {
-    private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-
     public async Task<IActionResult> Index()
     {
         ViewData["Customers"] = await customerService.GetAllAsync();
@@ -71,7 +69,7 @@ public class PosController(ISaleService saleService, IProductService productServ
 
         try
         {
-            var sale = await saleService.CreateAsync(request, CurrentUserId);
+            var sale = await saleService.CreateAsync(request, this.GetCurrentUserId());
             return Json(new { saleId = sale.Id });
         }
         catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException or ArgumentException)

@@ -150,18 +150,11 @@ public class SaleService(ApplicationDbContext db, IInventoryService inventory, I
         var reference = $"Sale#{sale.Id}";
         foreach (var payment in request.Payments.Where(p => p.Method != PaymentMethod.Credit && p.Amount > 0))
         {
-            var accountType = payment.Method switch
-            {
-                PaymentMethod.Cash => FinancialAccountType.CashSafe,
-                PaymentMethod.InstaPay => FinancialAccountType.InstaPay,
-                PaymentMethod.VodafoneCash => FinancialAccountType.VodafoneCash,
-                _ => throw new ArgumentOutOfRangeException(nameof(request)),
-            };
             var transactionType = payment.Method == PaymentMethod.Cash
                 ? FinancialTransactionType.CashSale
                 : FinancialTransactionType.DigitalSale;
 
-            await financial.PostAsync(accountType, transactionType, TransactionDirection.In, payment.Amount, cashierUserId, reference);
+            await financial.PostAsync(payment.Method.ToAccountType(), transactionType, TransactionDirection.In, payment.Amount, cashierUserId, reference);
         }
 
         if (creditAmount > 0)
@@ -222,18 +215,11 @@ public class SaleService(ApplicationDbContext db, IInventoryService inventory, I
 
         foreach (var payment in sale.Payments.Where(p => p.Method != PaymentMethod.Credit && p.Amount > 0))
         {
-            var accountType = payment.Method switch
-            {
-                PaymentMethod.Cash => FinancialAccountType.CashSafe,
-                PaymentMethod.InstaPay => FinancialAccountType.InstaPay,
-                PaymentMethod.VodafoneCash => FinancialAccountType.VodafoneCash,
-                _ => throw new ArgumentOutOfRangeException(nameof(sale)),
-            };
             var transactionType = payment.Method == PaymentMethod.Cash
                 ? FinancialTransactionType.CashSale
                 : FinancialTransactionType.DigitalSale;
 
-            await financial.PostAsync(accountType, transactionType, TransactionDirection.Out, payment.Amount, voidedByUserId, reference, reason);
+            await financial.PostAsync(payment.Method.ToAccountType(), transactionType, TransactionDirection.Out, payment.Amount, voidedByUserId, reference, reason);
         }
 
         if (sale.CreditAmount > 0 && sale.CustomerId is int customerId)

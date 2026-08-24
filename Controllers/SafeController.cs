@@ -1,6 +1,6 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using POS.Web.Authorization;
 using POS.Web.Models.Enums;
 using POS.Web.Services.Financial;
 using POS.Web.ViewModels;
@@ -10,7 +10,6 @@ namespace POS.Web.Controllers;
 [Authorize]
 public class SafeController(IFinancialAccountService financialAccountService) : Controller
 {
-    private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     public async Task<IActionResult> Index(FinancialAccountType? accountType, DateTime? from, DateTime? to)
     {
@@ -36,11 +35,19 @@ public class SafeController(IFinancialAccountService financialAccountService) : 
             return View(model);
         }
 
-        await financialAccountService.PostAsync(
-            model.AccountType, FinancialTransactionType.ManualDeposit, TransactionDirection.In,
-            model.Amount, CurrentUserId, description: model.Description);
-        TempData["Success"] = "تم تسجيل الإيداع بنجاح.";
-        return RedirectToAction(nameof(Index));
+        try
+        {
+            await financialAccountService.PostAsync(
+                model.AccountType, FinancialTransactionType.ManualDeposit, TransactionDirection.In,
+                model.Amount, this.GetCurrentUserId(), description: model.Description);
+            TempData["Success"] = "تم تسجيل الإيداع بنجاح.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException or ArgumentException)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(model);
+        }
     }
 
     [HttpGet]
@@ -62,10 +69,18 @@ public class SafeController(IFinancialAccountService financialAccountService) : 
             return View(model);
         }
 
-        await financialAccountService.PostAsync(
-            model.AccountType, FinancialTransactionType.ManagerWithdrawal, TransactionDirection.Out,
-            model.Amount, CurrentUserId, description: model.Description);
-        TempData["Success"] = "تم تسجيل السحب بنجاح.";
-        return RedirectToAction(nameof(Index));
+        try
+        {
+            await financialAccountService.PostAsync(
+                model.AccountType, FinancialTransactionType.ManagerWithdrawal, TransactionDirection.Out,
+                model.Amount, this.GetCurrentUserId(), description: model.Description);
+            TempData["Success"] = "تم تسجيل السحب بنجاح.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException or ArgumentException)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(model);
+        }
     }
 }

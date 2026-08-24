@@ -1,6 +1,6 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using POS.Web.Authorization;
 using POS.Web.Models.Enums;
 using POS.Web.Services.Customers;
 using POS.Web.ViewModels;
@@ -10,7 +10,6 @@ namespace POS.Web.Controllers;
 [Authorize]
 public class CustomersController(ICustomerService customerService) : Controller
 {
-    private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     public async Task<IActionResult> Index(string? search, bool includeInactive = false)
     {
@@ -114,11 +113,11 @@ public class CustomersController(ICustomerService customerService) : Controller
 
         try
         {
-            await customerService.RecordPaymentAsync(model.CustomerId, model.Amount, model.Method, CurrentUserId);
+            await customerService.RecordPaymentAsync(model.CustomerId, model.Amount, model.Method, this.GetCurrentUserId());
             TempData["Success"] = "تم تسجيل الدفعة بنجاح.";
             return RedirectToAction(nameof(Details), new { id = model.CustomerId });
         }
-        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+        catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException or ArgumentException)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             return View(model);

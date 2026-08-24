@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -8,13 +7,13 @@ using POS.Web.Models.Entities;
 using POS.Web.Models.Identity;
 using POS.Web.Services.Sales;
 using POS.Web.ViewModels;
+using POS.Web.Authorization;
 
 namespace POS.Web.Controllers;
 
 [Authorize]
 public class SalesController(ISaleService saleService, ApplicationDbContext db, UserManager<ApplicationUser> userManager) : Controller
 {
-    private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     public async Task<IActionResult> Index(DateTime? from, DateTime? to)
     {
@@ -71,11 +70,11 @@ public class SalesController(ISaleService saleService, ApplicationDbContext db, 
 
         try
         {
-            await saleService.VoidAsync(model.SaleId, CurrentUserId, model.Reason);
+            await saleService.VoidAsync(model.SaleId, this.GetCurrentUserId(), model.Reason);
             TempData["Success"] = "تم إلغاء الفاتورة بنجاح.";
             return RedirectToAction(nameof(Details), new { id = model.SaleId });
         }
-        catch (InvalidOperationException ex)
+        catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             return View(model);

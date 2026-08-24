@@ -45,12 +45,8 @@ public static class SeedData
         if (!await db.FinancialAccounts.AnyAsync())
         {
             db.FinancialAccounts.AddRange(
-                new FinancialAccount { Type = FinancialAccountType.CashSafe, Name = "الخزينة النقدية" },
-                new FinancialAccount { Type = FinancialAccountType.InstaPay, Name = "إنستاباي" },
-                new FinancialAccount { Type = FinancialAccountType.VodafoneCash, Name = "فودافون كاش" },
-                new FinancialAccount { Type = FinancialAccountType.CustomerReceivables, Name = "مديونية العملاء" },
-                new FinancialAccount { Type = FinancialAccountType.SupplierPayables, Name = "مستحقات الموردين" }
-            );
+                Services.Financial.FinancialAccountService.DefaultNames
+                    .Select(kv => new FinancialAccount { Type = kv.Key, Name = kv.Value }));
         }
 
         if (!await db.SystemSettings.AnyAsync())

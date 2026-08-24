@@ -108,15 +108,11 @@ public class CustomerService(ApplicationDbContext db, IFinancialAccountService f
         await db.SaveChangesAsync();
 
         var reference = $"CustomerPayment#{creditTransaction.Id}";
-        var (accountType, transactionType) = method switch
-        {
-            PaymentMethod.Cash => (FinancialAccountType.CashSafe, FinancialTransactionType.CashCreditPayment),
-            PaymentMethod.InstaPay => (FinancialAccountType.InstaPay, FinancialTransactionType.DigitalCreditPayment),
-            PaymentMethod.VodafoneCash => (FinancialAccountType.VodafoneCash, FinancialTransactionType.DigitalCreditPayment),
-            _ => throw new ArgumentOutOfRangeException(nameof(method)),
-        };
+        var transactionType = method == PaymentMethod.Cash
+            ? FinancialTransactionType.CashCreditPayment
+            : FinancialTransactionType.DigitalCreditPayment;
 
-        await financial.PostAsync(accountType, transactionType, TransactionDirection.In, amount, recordedByUserId, reference);
+        await financial.PostAsync(method.ToAccountType(), transactionType, TransactionDirection.In, amount, recordedByUserId, reference);
         await financial.PostAsync(FinancialAccountType.CustomerReceivables, transactionType, TransactionDirection.Out, amount, recordedByUserId, reference);
 
         await dbTransaction.CommitAsync();

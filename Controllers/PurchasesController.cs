@@ -1,9 +1,9 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using POS.Web.Services.Catalog;
 using POS.Web.Services.Purchasing;
 using POS.Web.ViewModels;
+using POS.Web.Authorization;
 
 namespace POS.Web.Controllers;
 
@@ -12,7 +12,6 @@ public class PurchasesController(
     IPurchaseInvoiceService purchaseInvoiceService, ISupplierService supplierService, ICategoryService categoryService, IStoreService storeService)
     : Controller
 {
-    private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     public async Task<IActionResult> Index() => View(await purchaseInvoiceService.GetAllAsync());
 
@@ -67,11 +66,11 @@ public class PurchasesController(
                 model.PaymentMethod,
                 model.SupplierInvoiceReference);
 
-            var invoice = await purchaseInvoiceService.CreateAsync(request, CurrentUserId);
+            var invoice = await purchaseInvoiceService.CreateAsync(request, this.GetCurrentUserId());
             TempData["Success"] = "تم إنشاء فاتورة الشراء بنجاح.";
             return RedirectToAction(nameof(Details), new { id = invoice.Id });
         }
-        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or KeyNotFoundException)
+        catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException or ArgumentException)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             model.Suppliers = await supplierService.GetAllAsync();
@@ -107,11 +106,11 @@ public class PurchasesController(
 
         try
         {
-            await purchaseInvoiceService.AddPaymentAsync(model.InvoiceId, model.Amount, model.Method, CurrentUserId);
+            await purchaseInvoiceService.AddPaymentAsync(model.InvoiceId, model.Amount, model.Method, this.GetCurrentUserId());
             TempData["Success"] = "تم تسجيل الدفعة بنجاح.";
             return RedirectToAction(nameof(Details), new { id = model.InvoiceId });
         }
-        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+        catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException or ArgumentException)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             return View(model);

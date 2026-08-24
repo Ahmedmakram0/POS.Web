@@ -110,15 +110,8 @@ public class PurchaseInvoiceService(ApplicationDbContext db, IInventoryService i
             });
             await db.SaveChangesAsync();
 
-            var accountType = method switch
-            {
-                PaymentMethod.Cash => FinancialAccountType.CashSafe,
-                PaymentMethod.InstaPay => FinancialAccountType.InstaPay,
-                PaymentMethod.VodafoneCash => FinancialAccountType.VodafoneCash,
-                _ => throw new ArgumentOutOfRangeException(nameof(request)),
-            };
             await financial.PostAsync(
-                accountType, FinancialTransactionType.SupplierPayment, TransactionDirection.Out,
+                method.ToAccountType(), FinancialTransactionType.SupplierPayment, TransactionDirection.Out,
                 amountPaid, createdByUserId, $"PurchaseInvoice#{invoice.Id}");
         }
 
@@ -163,15 +156,8 @@ public class PurchaseInvoiceService(ApplicationDbContext db, IInventoryService i
 
         await db.SaveChangesAsync();
 
-        var accountType = method switch
-        {
-            PaymentMethod.Cash => FinancialAccountType.CashSafe,
-            PaymentMethod.InstaPay => FinancialAccountType.InstaPay,
-            PaymentMethod.VodafoneCash => FinancialAccountType.VodafoneCash,
-            _ => throw new ArgumentOutOfRangeException(nameof(method)),
-        };
         await financial.PostAsync(
-            accountType, FinancialTransactionType.SupplierPayment, TransactionDirection.Out,
+            method.ToAccountType(), FinancialTransactionType.SupplierPayment, TransactionDirection.Out,
             amount, paidByUserId, $"PurchaseInvoice#{invoice.Id}");
 
         await dbTransaction.CommitAsync();

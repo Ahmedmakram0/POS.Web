@@ -1,6 +1,6 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using POS.Web.Authorization;
 using POS.Web.Models.Enums;
 using POS.Web.Services.Catalog;
 using POS.Web.Services.Media;
@@ -15,7 +15,6 @@ public class ProductsController(
     ISupplierService supplierService, IStoreService storeService, IProductImageService productImageService)
     : Controller
 {
-    private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     public async Task<IActionResult> Index(string? search, int? categoryId, int? storeId, bool includeInactive = false, bool onlyLowStock = false)
     {
@@ -83,7 +82,7 @@ public class ProductsController(
                 model.CostPrice, model.SellingPrice, model.MinimumSellingPrice,
                 model.InitialStockQuantity, model.MinimumStockLevel, model.StoreId, model.Location,
                 imageUrl, imagePublicId);
-            var product = await productService.CreateAsync(request, CurrentUserId);
+            var product = await productService.CreateAsync(request, this.GetCurrentUserId());
             TempData["Success"] = "تم إضافة المنتج بنجاح. يمكنك الآن طباعة ملصق الباركود.";
             return RedirectToAction(nameof(Details), new { id = product.Id });
         }
@@ -145,7 +144,7 @@ public class ProductsController(
             await productService.UpdateDetailsAsync(
                 id, model.Barcode, model.SKU, model.Name, model.CategoryId, model.SupplierId, model.MinimumStockLevel,
                 model.StoreId, model.Location);
-            await productService.UpdatePricingAsync(id, model.CostPrice, model.SellingPrice, model.MinimumSellingPrice, CurrentUserId, "تعديل يدوي");
+            await productService.UpdatePricingAsync(id, model.CostPrice, model.SellingPrice, model.MinimumSellingPrice, this.GetCurrentUserId(), "تعديل يدوي");
 
             if (model.ImageFile is { Length: > 0 } imageFile)
             {
@@ -163,7 +162,7 @@ public class ProductsController(
             TempData["Success"] = "تم تحديث المنتج بنجاح.";
             return RedirectToAction(nameof(Index));
         }
-        catch (InvalidOperationException ex)
+        catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             model.Categories = await categoryService.GetAllAsync();
@@ -206,7 +205,7 @@ public class ProductsController(
                     request.Barcode.Trim(), request.SKU, request.Name.Trim(), request.CategoryId, request.SupplierId,
                     request.CostPrice, request.SellingPrice, request.MinimumSellingPrice, 0, request.MinimumStockLevel,
                     request.StoreId, request.Location),
-                CurrentUserId);
+                this.GetCurrentUserId());
 
             return Json(new
             {
@@ -313,11 +312,11 @@ public class ProductsController(
 
         try
         {
-            await inventoryService.AdjustStockAsync(model.ProductId, model.QuantityChange, model.Type, CurrentUserId, reason: model.Reason);
+            await inventoryService.AdjustStockAsync(model.ProductId, model.QuantityChange, model.Type, this.GetCurrentUserId(), reason: model.Reason);
             TempData["Success"] = "تم تعديل المخزون بنجاح.";
             return RedirectToAction(nameof(Details), new { id = model.ProductId });
         }
-        catch (InvalidOperationException ex)
+        catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException or ArgumentException)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             return View(model);
