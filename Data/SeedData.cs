@@ -23,7 +23,11 @@ public static class SeedData
         }
 
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-        const string superAdminEmail = "admin@pos.local";
+        var configuration = services.GetRequiredService<IConfiguration>();
+        // Override via Seed:SuperAdminEmail / Seed:SuperAdminPassword (appsettings or user-secrets)
+        // for anything beyond local development -- these defaults are not meant for production.
+        var superAdminEmail = configuration["Seed:SuperAdminEmail"] ?? "admin@pos.local";
+        var superAdminPassword = configuration["Seed:SuperAdminPassword"] ?? "Admin@12345";
         if (await userManager.FindByEmailAsync(superAdminEmail) is null)
         {
             var superAdmin = new ApplicationUser
@@ -37,7 +41,7 @@ public static class SeedData
                 MaxDiscountPercent = 100
             };
 
-            var result = await userManager.CreateAsync(superAdmin, "Admin@12345");
+            var result = await userManager.CreateAsync(superAdmin, superAdminPassword);
             if (result.Succeeded)
                 await userManager.AddToRoleAsync(superAdmin, "SuperAdmin");
         }
